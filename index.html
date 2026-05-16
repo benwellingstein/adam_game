@@ -43,6 +43,9 @@ const pf     = document.getElementById('pf');
 const audio  = document.getElementById('audio');
 audio.src = SONG;
 
+// ── Ars images ────────────────────────────────────────────────────────────────
+const arsImgs = [1,2,3].map(n => { const img = new Image(); img.src = `Images/ars${n}.png`; return img; });
+
 // ── Sound effects ─────────────────────────────────────────────────────────────
 function playSound(snd) { snd.currentTime = 0; snd.play().catch(() => {}); }
 const sfxJump     = new Audio('sounds/jump.mp3');
@@ -199,7 +202,8 @@ function spawnObstacle() {
   } else {
     const count = Math.random() < 0.5 ? 1 : Math.random() < 0.6 ? 2 : 3;
     const tall  = Math.random() < 0.5;
-    obstacles.push({ type:'ars', x: canvas.width + 60, y: GND(), count, tall });
+    const imgIdxs = Array.from({length: count}, () => Math.floor(Math.random() * 3));
+    obstacles.push({ type:'ars', x: canvas.width + 60, y: GND(), count, tall, imgIdxs });
   }
 }
 
@@ -327,7 +331,7 @@ function render() {
   }
 
   for (const o of obstacles) {
-    if (o.type === 'ars') drawArs(o.x, o.y, o.count, o.tall);
+    if (o.type === 'ars') drawArs(o.x, o.y, o.count, o.tall, o.imgIdxs);
     else                  drawRocketObs(o.x, o.y);
   }
   if (houseActive) drawHouse(houseX, GND());
@@ -544,92 +548,22 @@ function drawRunner(x, y, _fc, jumping, angle, dead) {
 }
 
 // ── ערס obstacle (pixel art) ──────────────────────────────────────────────────
-function drawArs(x, y, count, tall) {
+function drawArs(x, y, count, tall, imgIdxs) {
   const W=34, GAP=6, totalW=count*W+(count-1)*GAP;
   for (let i=0; i<count; i++) {
-    drawOneArs(x - totalW/2 + i*(W+GAP) + W/2, y, tall, i%2===1);
+    drawOneArs(x - totalW/2 + i*(W+GAP) + W/2, y, tall, i%2===1, arsImgs[imgIdxs[i]]);
   }
 }
 
-function drawOneArs(x, y, tall, flip) {
-  const sc = tall ? 1 : 0.78;
-  ctx.save(); ctx.translate(x, y);
+function drawOneArs(x, y, tall, flip, img) {
+  const drawH = tall ? 120 : 90;
+  const drawW = img.complete && img.naturalWidth ? drawH * img.naturalWidth / img.naturalHeight : drawH * 0.42;
+  ctx.save();
+  ctx.translate(x, y);
   if (flip) ctx.scale(-1, 1);
-
-  const p = v => Math.round(v * sc);
-
-  // Shadow (flat rect)
   ctx.fillStyle = 'rgba(0,0,0,.15)';
-  ctx.fillRect(p(-16), -3, p(32), 5);
-
-  // Sneakers
-  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#aaa'; ctx.lineWidth = 1;
-  ctx.fillRect(p(-16), p(-12), p(13), p(12)); ctx.strokeRect(p(-16), p(-12), p(13), p(12));
-  ctx.fillRect(p(3),   p(-12), p(13), p(12)); ctx.strokeRect(p(3), p(-12), p(13), p(12));
-
-  // Pants
-  ctx.fillStyle = '#cc1100';
-  ctx.fillRect(p(-14), p(-38), p(28), p(28));
-  ctx.fillStyle = 'white';
-  ctx.fillRect(p(-14), p(-36), p(3), p(24));
-  ctx.fillRect(p(11),  p(-36), p(3), p(24));
-
-  // Jacket
-  ctx.fillStyle = '#cc1100';
-  ctx.fillRect(p(-16), p(-68), p(32), p(32));
-  ctx.fillStyle = 'white';
-  ctx.fillRect(p(-2),  p(-68), p(4),  p(32)); // zip
-  ctx.fillRect(p(-16), p(-66), p(3),  p(28));
-  ctx.fillRect(p(13),  p(-66), p(3),  p(28));
-
-  // Arms
-  ctx.fillStyle = '#c8956c';
-  ctx.fillRect(p(-18), p(-66), p(10), p(18));
-  ctx.fillRect(p(8),   p(-66), p(10), p(18));
-  // Hands
-  ctx.fillRect(p(-10), p(-52), p(8),  p(8));
-  ctx.fillRect(p(2),   p(-52), p(8),  p(8));
-
-  // Chain
-  ctx.fillStyle = '#FFD700';
-  ctx.fillRect(p(-8), p(-62), p(16), p(3));
-  ctx.fillRect(p(-4), p(-59), p(8),  p(10));
-
-  // Head
-  ctx.fillStyle = '#c8956c';
-  ctx.fillRect(p(-13), p(-96), p(26), p(28));
-  ctx.fillRect(p(-5),  p(-70), p(10), p(4)); // neck
-
-  // Hair
-  ctx.fillStyle = '#1a0500';
-  ctx.fillRect(p(-13), p(-96), p(26), p(10));
-  ctx.fillRect(p(-12), p(-106),p(6),  p(12));
-  ctx.fillRect(p(-4),  p(-110),p(6),  p(16));
-  ctx.fillRect(p(4),   p(-108),p(6),  p(14));
-
-  // Sunglasses
-  ctx.fillStyle = '#111';
-  ctx.fillRect(p(-13), p(-88), p(11), p(7));
-  ctx.fillRect(p(2),   p(-88), p(11), p(7));
-  ctx.fillStyle = '#555';
-  ctx.fillRect(p(-2),  p(-86), p(4),  p(3)); // bridge
-  ctx.fillRect(p(-18), p(-86), p(5),  p(3)); // arm L
-  ctx.fillRect(p(13),  p(-86), p(5),  p(3)); // arm R
-
-  // Smirk
-  ctx.fillStyle = '#7a3a10';
-  ctx.fillRect(p(-4), p(-74), p(2), p(2));
-  ctx.fillRect(p(-2), p(-72), p(8), p(2));
-
-  // Cigarette
-  ctx.fillStyle = '#eee';
-  ctx.fillRect(p(6),  p(-72), p(12), p(2));
-  ctx.fillStyle = '#ff4400';
-  ctx.fillRect(p(18), p(-74), p(4),  p(4));
-  ctx.fillStyle = 'rgba(200,200,200,.5)';
-  ctx.fillRect(p(20), p(-80), p(4),  p(6));
-  ctx.fillRect(p(22), p(-86), p(4),  p(6));
-
+  ctx.fillRect(-drawW/2 - 2, -3, drawW + 4, 5);
+  if (img.complete && img.naturalWidth) ctx.drawImage(img, -drawW/2, -drawH, drawW, drawH);
   ctx.restore();
 }
 
