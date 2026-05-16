@@ -47,6 +47,7 @@ audio.src = SONG;
 const arsImgs = [1,2,3].map(n => { const img = new Image(); img.src = `Images/ars${n}.png`; return img; });
 const missileImg = new Image(); missileImg.src = 'Images/missile.png';
 const sverdiImg  = new Image(); sverdiImg.src  = 'Images/sverdi.png';
+const houseImg   = new Image(); houseImg.src   = 'Images/house.png';
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
 function playSound(snd) { snd.currentTime = 0; snd.play().catch(() => {}); }
@@ -490,43 +491,14 @@ function drawRocketObs(x, y) {
 
 // ── House + palm tree (unchanged) ─────────────────────────────────────────────
 function drawHouse(cx, gy) {
-  const W=220, H=165;
-  ctx.save(); ctx.translate(cx, gy);
-  ctx.fillStyle='rgba(0,0,0,.12)';
-  ctx.beginPath(); ctx.ellipse(15,4,155,13,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#f5e6c8'; ctx.strokeStyle='#c4a46b'; ctx.lineWidth=2;
-  ctx.fillRect(-W/2,-H,W,H); ctx.strokeRect(-W/2,-H,W,H);
-  ctx.fillStyle='#e05a2b'; ctx.strokeStyle='#b03a1b'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(-W/2-15,-H); ctx.lineTo(0,-H-68); ctx.lineTo(W/2+15,-H); ctx.closePath();
-  ctx.fill(); ctx.stroke();
-  ctx.fillStyle='#c0704a'; ctx.strokeStyle='#8b4a2a'; ctx.lineWidth=1.5;
-  ctx.fillRect(55,-H-48,22,38); ctx.strokeRect(55,-H-48,22,38);
-  for (const wx of [-W/2+18, W/2-58]) {
-    ctx.fillStyle='#aaddff'; ctx.strokeStyle='#6699bb'; ctx.lineWidth=1.5;
-    ctx.fillRect(wx,-H+28,40,34); ctx.strokeRect(wx,-H+28,40,34);
-    ctx.beginPath();
-    ctx.moveTo(wx+20,-H+28); ctx.lineTo(wx+20,-H+62);
-    ctx.moveTo(wx,-H+45);    ctx.lineTo(wx+40,-H+45); ctx.stroke();
-  }
-  const dW=52, dH=72;
-  ctx.fillStyle='#8B5E3C'; ctx.strokeStyle='#5a3a1a'; ctx.lineWidth=1.5;
-  ctx.beginPath();
-  ctx.moveTo(-dW/2,0); ctx.lineTo(-dW/2,-dH);
-  ctx.quadraticCurveTo(-dW/2,-dH-10,0,-dH-10);
-  ctx.quadraticCurveTo(dW/2,-dH-10,dW/2,-dH);
-  ctx.lineTo(dW/2,0); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.fillStyle='#ffd700';
-  ctx.beginPath(); ctx.arc(dW/2-10,-dH/2,5,0,Math.PI*2); ctx.fill();
-  const tx=W/2+45;
-  ctx.strokeStyle='#8B6914'; ctx.lineWidth=10; ctx.lineCap='round';
-  ctx.beginPath(); ctx.moveTo(tx,0); ctx.bezierCurveTo(tx+12,-35,tx+6,-68,tx-6,-105); ctx.stroke();
-  for (const [a,c] of [[-0.5,'#3a9a2a'],[0.35,'#4ab83a'],[1.1,'#5acc4a'],[-1.4,'#3a9a2a'],[-2.1,'#4ab83a']]) {
-    ctx.save(); ctx.translate(tx-6,-105); ctx.rotate(a);
-    ctx.fillStyle=c; ctx.beginPath(); ctx.ellipse(28,0,32,9,0,0,Math.PI*2); ctx.fill(); ctx.restore();
-  }
-  ctx.fillStyle='#8B4513';
-  ctx.beginPath(); ctx.arc(tx-3,-92,7,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(tx-13,-98,7,0,Math.PI*2); ctx.fill();
+  if (!houseImg.complete || !houseImg.naturalWidth) return;
+  const drawW = 220;
+  const drawH = drawW * houseImg.naturalHeight / houseImg.naturalWidth;
+  ctx.save();
+  ctx.translate(cx, gy);
+  ctx.fillStyle = 'rgba(0,0,0,.12)';
+  ctx.beginPath(); ctx.ellipse(0, 4, drawW * 0.7, 13, 0, 0, Math.PI*2); ctx.fill();
+  ctx.drawImage(houseImg, -drawW/2, -drawH, drawW, drawH);
   ctx.restore();
 }
 
