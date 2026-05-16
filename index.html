@@ -217,7 +217,7 @@ function updateEnding() {
   isNight = true;
   advanceMoon(speed);
   physicsStep();
-  houseX -= canvas.width / 52;
+  if (!R.entering) houseX -= canvas.width / 80;
   if (!R.entering && houseX <= R.x + 55) R.entering = true;
   if (R.entering) {
     R.alpha -= 0.04; R.x += 2.5;
@@ -270,7 +270,7 @@ function render() {
   drawGround();
 
   if (state === S.CELEBRATION) {
-    drawHouse(canvas.width*.5, GND()); drawCelebParticles(); drawCelebText(); return;
+    drawHouse(houseX, GND()); drawCelebParticles(); drawCelebText(); return;
   }
 
   for (const o of obstacles) {
