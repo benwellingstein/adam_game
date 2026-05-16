@@ -80,8 +80,8 @@ function onTap() {
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); onTap(); }
 });
-canvas.addEventListener('touchstart', e => { e.preventDefault(); onTap(); }, { passive:false });
-canvas.addEventListener('mousedown', () => onTap());
+document.addEventListener('touchstart', e => { e.preventDefault(); onTap(); }, { passive:false });
+document.addEventListener('mousedown', () => onTap());
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 audio.addEventListener('loadedmetadata', () => { songDuration = audio.duration || songDuration; goReady(); });
