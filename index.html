@@ -219,6 +219,11 @@ const ARS_DEATH_TEXTS = [
   ['אחח איזה מדינה של ערסים\nאי אפשר לצאת בלי לחטוף שפיץ', 'נסה שוב יא מנייק'],
   ['אייי פונצ׳רט יא מנייק', 'נסה עוד פעם אם ישך אומץ'],
 ];
+const ROCKET_DEATH_TEXTS = [
+  ['וואלק שמו בך האירנים המנייק', 'נסה שוב'],
+  ['מה הסיכוי שייפול לך טיל על הראש\nכנראה שאלוהים שונא אותך', 'נסה שוב'],
+  ['איזה נאחס מתת באירוע פחע\nנזכור אותך לנצח', 'או שתנסה שוב'],
+];
 
 function killRunner(killedBy) {
   state = S.DEAD; deadTick = 0; audio.pause(); lastKiller = killedBy;
@@ -238,6 +243,9 @@ function updateDead() {
     ovEl.classList.remove('hidden'); pb.classList.add('hidden');
     if (lastKiller === 'ars') {
       const t = ARS_DEATH_TEXTS[Math.floor(Math.random() * ARS_DEATH_TEXTS.length)];
+      ovT.textContent = t[0]; ovS.textContent = t[1];
+    } else if (lastKiller === 'rocket') {
+      const t = ROCKET_DEATH_TEXTS[Math.floor(Math.random() * ROCKET_DEATH_TEXTS.length)];
       ovT.textContent = t[0]; ovS.textContent = t[1];
     } else {
       ovT.textContent = '💥 עוד פעם!'; ovS.textContent = 'לחץ / הקש לנסות שוב';
