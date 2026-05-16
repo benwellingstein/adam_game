@@ -13,6 +13,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       background: rgba(0,20,60,0.72); color: white;
       font-family: 'Courier New', monospace; text-align: center; padding: 20px;
+      direction: rtl; unicode-bidi: plaintext;
     }
     #overlay h1 { font-size: clamp(1.8rem,6vw,4rem); margin-bottom:.8rem; line-height:1.2; }
     #overlay p  { font-size: clamp(1rem,3vw,1.5rem); opacity:.88; margin-top:.4rem; }
@@ -43,7 +44,7 @@ const audio  = document.getElementById('audio');
 audio.src = SONG;
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
-function playSound(snd) { const s = snd.cloneNode(); s.play().catch(() => {}); }
+function playSound(snd) { snd.currentTime = 0; snd.play().catch(() => {}); }
 const sfxJump     = new Audio('sounds/jump.mp3');
 const sfxDeaths   = [new Audio('sounds/death.mp3'), new Audio('sounds/death2.mp3')];
 const sfxArsim    = [1,2,3,4,5].map(n => new Audio(`sounds/arsim/ars${n}.mp3`));
@@ -114,7 +115,7 @@ audio.addEventListener('error', goReady);
 
 function goReady() {
   state = S.READY;
-  ovT.textContent = '🏃האוס 30 - מסעו של סברדי 🏃';
+  ovT.innerHTML = 'האוס 30<br>מסעו של סברדי';
   ovS.textContent = 'תעזרו לסברדי להגיע לאולפן של אדם בלאגן כדי שהם יוכלו לבשל באנגרים\nרק תזהרו שלא להדקר בדרך וגם שלא יתפסו אתכם האירנים המנייק\nבהצלחה…';
   ovEl.classList.remove('hidden');
   initRunner();
@@ -717,7 +718,7 @@ function drawCelebText() {
   if (celebTick < 30) return;
   const pulse=1+Math.sin(fc*.07)*.05, fs=Math.min(canvas.width*.085,64);
   ctx.save(); ctx.translate(canvas.width/2, canvas.height*.33); ctx.scale(pulse,pulse);
-  ctx.font=`bold ${fs}px Arial,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font=`bold ${fs}px Arial,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.direction='rtl';
   const line1='ווהוו סברדי הגיע בשלום לאולפן 🎉', line2='עכשיו הוא ואדם בלאגן יכולים לבשל עוד באנגרים 🏠';
   ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillText(line1,3,3); ctx.fillText(line2,3,fs+15);
   ctx.strokeStyle='#fff'; ctx.lineWidth=7; ctx.lineJoin='round';
