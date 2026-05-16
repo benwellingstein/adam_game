@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Adam's Game</title>
+  <title>האוס 30</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #111; touch-action: none; user-select: none; }
@@ -27,8 +27,8 @@
 <canvas id="game"></canvas>
 <div id="pb" class="hidden"><div id="pf"></div></div>
 <div id="overlay">
-  <h1 id="ov-t">🏃 האוס 30🏃</h1>
-  <p  id="ov-s">Loading music...</p>
+  <h1 id="ov-t">אוס 30</h1>
+  <p  id="ov-s">שנייה טוען...</p>
 </div>
 <audio id="audio" preload="auto"></audio>
 <script>
@@ -140,42 +140,42 @@ function startGame() {
 }
 
 // ── UPDATE ────────────────────────────────────────────────────────────────────
-function update() {
-  fc++;
-  if      (state === S.PLAYING)     updatePlaying();
-  else if (state === S.ENDING)      updateEnding();
-  else if (state === S.DEAD)        updateDead();
-  else if (state === S.CELEBRATION) updateCeleb();
+function update(dt) {
+  fc += dt;
+  if      (state === S.PLAYING)     updatePlaying(dt);
+  else if (state === S.ENDING)      updateEnding(dt);
+  else if (state === S.DEAD)        updateDead(dt);
+  else if (state === S.CELEBRATION) updateCeleb(dt);
 }
 
-function physicsStep() {
+function physicsStep(dt) {
   if (!R.onGround) {
-    R.vy += GRAV; R.y += R.vy;
+    R.vy += GRAV * dt; R.y += R.vy * dt;
     if (R.y >= GND()) { R.y = GND(); R.vy = 0; R.onGround = true; }
   }
 }
 
-function advanceMoon(spd) {
+function advanceMoon(spd, dt) {
   moonOff = (moonOff + spd * 0.12) % (canvas.width * 8);
-  if (isNight) moonAlpha = Math.min(1, moonAlpha + 0.006);
+  if (isNight) moonAlpha = Math.min(1, moonAlpha + 0.006 * dt);
 }
 
-function updatePlaying() {
+function updatePlaying(dt) {
   speed = 5 + Math.min(audio.currentTime * 0.025, 5);
-  gndScroll = (gndScroll + speed) % 80;
-  totalScroll += speed;
+  gndScroll = (gndScroll + speed * dt) % 80;
+  totalScroll += speed * dt;
   isNight = !isNaN(audio.currentTime) && audio.currentTime >= songDuration / 2;
-  advanceMoon(speed);
-  physicsStep();
+  advanceMoon(speed * dt, dt);
+  physicsStep(dt);
 
   const left = songDuration - audio.currentTime;
   if (!isNaN(left) && left <= 2 && !houseActive) {
     state = S.ENDING; houseActive = true; houseX = canvas.width + 30; obstacles = []; return;
   }
 
-  spawnTimer++;
+  spawnTimer += dt;
   if (spawnTimer >= nextSpawn) { spawnTimer = 0; nextSpawn = randSpawn(); spawnObstacle(); }
-  obstacles = obstacles.filter(o => { o.x -= speed; return o.x > -150; });
+  obstacles = obstacles.filter(o => { o.x -= speed * dt; return o.x > -150; });
 
   for (const o of obstacles) {
     if (o.sfxDone) continue;
@@ -242,10 +242,10 @@ function killRunner(killedBy) {
   R.onGround = false;
 }
 
-function updateDead() {
-  deadTick++;
-  R.deadVY += GRAV * 0.7;
-  R.y += R.deadVY;
+function updateDead(dt) {
+  deadTick += dt;
+  R.deadVY += GRAV * 0.7 * dt;
+  R.y += R.deadVY * dt;
 
   if (R.y > canvas.height + 160 || deadTick > 220) {
     state = S.READY;
@@ -263,16 +263,16 @@ function updateDead() {
   }
 }
 
-function updateEnding() {
-  gndScroll = (gndScroll + speed) % 80;
-  totalScroll += speed;
+function updateEnding(dt) {
+  gndScroll = (gndScroll + speed * dt) % 80;
+  totalScroll += speed * dt;
   isNight = true;
-  advanceMoon(speed);
-  physicsStep();
-  if (!R.entering) houseX -= canvas.width / 80;
+  advanceMoon(speed * dt, dt);
+  physicsStep(dt);
+  if (!R.entering) houseX -= canvas.width / 80 * dt;
   if (!R.entering && houseX <= R.x + 55) R.entering = true;
   if (R.entering) {
-    R.alpha -= 0.04; R.x += 2.5;
+    R.alpha -= 0.04 * dt; R.x += 2.5 * dt;
     if (R.alpha <= 0) beginCelebration();
   }
   if (!isNaN(audio.duration)) pf.style.width = (audio.currentTime / audio.duration * 100) + '%';
@@ -283,12 +283,13 @@ function beginCelebration() {
   spawnConfetti(120); spawnFirework();
 }
 
-function updateCeleb() {
-  celebTick++;
-  if (celebTick % 28 === 0) spawnConfetti(60);
-  if (celebTick % 55 === 0) spawnFirework();
-  confetti  = confetti.filter(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=0.06; p.rot+=p.rotV; p.life-=0.004; return p.life>0&&p.y<canvas.height+60; });
-  fireworks = fireworks.filter(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.vx*=0.97; p.life-=0.013; return p.life>0; });
+function updateCeleb(dt) {
+  const prev = celebTick;
+  celebTick += dt;
+  if (Math.floor(celebTick / 28) > Math.floor(prev / 28)) spawnConfetti(60);
+  if (Math.floor(celebTick / 55) > Math.floor(prev / 55)) spawnFirework();
+  confetti  = confetti.filter(p => { p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=0.06*dt; p.rot+=p.rotV*dt; p.life-=0.004*dt; return p.life>0&&p.y<canvas.height+60; });
+  fireworks = fireworks.filter(p => { p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=0.12*dt; p.vx*=Math.pow(0.97,dt); p.life-=0.013*dt; return p.life>0; });
 }
 
 function spawnConfetti(n) {
@@ -739,9 +740,14 @@ function drawCelebText() {
 }
 
 // ── Main loop ─────────────────────────────────────────────────────────────────
-function loop() { update(); render(); requestAnimationFrame(loop); }
+let lastTs = 0;
+function loop(ts) {
+  const dt = lastTs ? Math.min((ts - lastTs) / (1000 / 60), 3) : 1;
+  lastTs = ts;
+  update(dt); render(); requestAnimationFrame(loop);
+}
 audio.load();
-loop();
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
