@@ -45,6 +45,7 @@ audio.src = SONG;
 
 // ── Ars images ────────────────────────────────────────────────────────────────
 const arsImgs = [1,2,3].map(n => { const img = new Image(); img.src = `Images/ars${n}.png`; return img; });
+const missileImg = new Image(); missileImg.src = 'Images/missile.png';
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
 function playSound(snd) { snd.currentTime = 0; snd.play().catch(() => {}); }
@@ -569,37 +570,11 @@ function drawOneArs(x, y, tall, flip, img) {
 
 // ── Rocket obstacle (pixel art) ───────────────────────────────────────────────
 function drawRocketObs(x, y) {
-  ctx.save(); ctx.translate(x, y);
-
-  // Animated flame
-  const ph = Math.floor(fc/5) % 3;
-  const fl = [10, 16, 12][ph];
-  ctx.fillStyle = '#fff';   ctx.fillRect(26, -4, 4, 8);
-  ctx.fillStyle = '#ffff00'; ctx.fillRect(30, -6, fl * 0.5|0, 12);
-  ctx.fillStyle = '#ff6600'; ctx.fillRect(30 + (fl*0.5|0), -4, fl * 0.5|0, 8);
-  ctx.fillStyle = 'rgba(255,60,0,0.35)'; ctx.fillRect(30 + fl, -2, fl * 0.4|0, 4);
-
-  // Body
-  ctx.fillStyle = '#eeeef8'; ctx.strokeStyle = '#55556a'; ctx.lineWidth = 1.5;
-  ctx.fillRect(-26, -11, 52, 22); ctx.strokeRect(-26, -11, 52, 22);
-
-  // Nose cone (pixel triangle via stacked rects)
-  ctx.fillStyle = '#ff4444';
-  ctx.fillRect(-38, -8, 12, 16);
-  ctx.fillRect(-44, -4, 6,  8);
-  ctx.fillRect(-48, -2, 4,  4);
-
-  // Window
-  ctx.fillStyle = '#7ecfff'; ctx.strokeStyle = '#3399cc'; ctx.lineWidth = 1.5;
-  ctx.fillRect(-12, -7, 14, 14); ctx.strokeRect(-12, -7, 14, 14);
-  ctx.fillStyle = 'rgba(255,255,255,.6)';
-  ctx.fillRect(-11, -6, 5, 5);
-
-  // Fins
-  ctx.fillStyle = '#ff4444';
-  ctx.fillRect(18, -18, 10, 8);
-  ctx.fillRect(18,  10, 10, 8);
-
+  if (!missileImg.complete || !missileImg.naturalWidth) return;
+  const drawW = 120, drawH = 36;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.drawImage(missileImg, -drawW/2, -drawH/2, drawW, drawH);
   ctx.restore();
 }
 
