@@ -26,7 +26,7 @@
 <canvas id="game"></canvas>
 <div id="pb" class="hidden"><div id="pf"></div></div>
 <div id="overlay">
-  <h1 id="ov-t">🏃 משחק של אדם 🏃</h1>
+  <h1 id="ov-t">🏃 האוס 30🏃</h1>
   <p  id="ov-s">Loading music...</p>
 </div>
 <audio id="audio" preload="auto"></audio>
@@ -114,8 +114,8 @@ audio.addEventListener('error', goReady);
 
 function goReady() {
   state = S.READY;
-  ovT.textContent = '🏃 משחק של אדם 🏃';
-  ovS.textContent = 'לחץ / הקש להתחלה';
+  ovT.textContent = '🏃האוס 30 - מסעו של סברדי 🏃';
+  ovS.textContent = 'תעזרו לסברדי להגיע לאולפן של אדם בלאגן כדי שהם יוכלו לבשל באנגרים\nרק תזהרו שלא להדקר בדרך וגם שלא יתפסו אתכם האירנים המנייק\nבהצלחה…';
   ovEl.classList.remove('hidden');
   initRunner();
 }
@@ -179,7 +179,7 @@ function updatePlaying() {
     }
   }
 
-  if (collides()) killRunner();
+  const hit = collides(); if (hit) killRunner(hit);
   if (!isNaN(audio.duration)) pf.style.width = (audio.currentTime / audio.duration * 100) + '%';
 }
 
@@ -205,19 +205,26 @@ function collides() {
     if (o.type === 'ars') {
       const gw = o.count * 34 + (o.count - 1) * 6;
       const gh = o.tall ? 80 : 62;
-      if (aabb(rb, o.x - gw/2 + 5, o.y - gh + 6, gw - 10, gh - 6)) return true;
+      if (aabb(rb, o.x - gw/2 + 5, o.y - gh + 6, gw - 10, gh - 6)) return 'ars';
     } else {
-      if (aabb(rb, o.x - 22, o.y - 9, 44, 18)) return true;
+      if (aabb(rb, o.x - 22, o.y - 9, 44, 18)) return 'rocket';
     }
   }
-  return false;
+  return null;
 }
 
-function killRunner() {
-  state = S.DEAD; deadTick = 0; audio.pause();
+let lastKiller = null;
+const ARS_DEATH_TEXTS = [
+  ['נהוראי השרמיט שם בך', 'נסה שוב הפעם בלי להדקר כמו שמאלן'],
+  ['אחח איזה מדינה של ערסים\nאי אפשר לצאת בלי לחטוף שפיץ', 'נסה שוב יא מנייק'],
+  ['אייי פונצ׳רט יא מנייק', 'נסה עוד פעם אם ישך אומץ'],
+];
+
+function killRunner(killedBy) {
+  state = S.DEAD; deadTick = 0; audio.pause(); lastKiller = killedBy;
   playSound(sfxDeaths[Math.floor(Math.random() * sfxDeaths.length)]);
-  R.angle = Math.PI;   // flip upside-down immediately
-  R.deadVY = -10;      // small upward kick
+  R.angle = Math.PI;
+  R.deadVY = -10;
   R.onGround = false;
 }
 
@@ -229,8 +236,12 @@ function updateDead() {
   if (R.y > canvas.height + 160 || deadTick > 220) {
     state = S.READY;
     ovEl.classList.remove('hidden'); pb.classList.add('hidden');
-    ovT.textContent = '💥 עוד פעם!';
-    ovS.textContent = 'לחץ / הקש לנסות שוב';
+    if (lastKiller === 'ars') {
+      const t = ARS_DEATH_TEXTS[Math.floor(Math.random() * ARS_DEATH_TEXTS.length)];
+      ovT.textContent = t[0]; ovS.textContent = t[1];
+    } else {
+      ovT.textContent = '💥 עוד פעם!'; ovS.textContent = 'לחץ / הקש לנסות שוב';
+    }
     initRunner();
   }
 }
@@ -699,16 +710,14 @@ function drawCelebText() {
   const pulse=1+Math.sin(fc*.07)*.05, fs=Math.min(canvas.width*.085,64);
   ctx.save(); ctx.translate(canvas.width/2, canvas.height*.33); ctx.scale(pulse,pulse);
   ctx.font=`bold ${fs}px Arial,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillText('🎉 מזל טוב אדם! 🎉',3,3);
+  const line1='ווהוו סברדי הגיע בשלום לאולפן 🎉', line2='עכשיו הוא ואדם בלאגן יכולים לבשל עוד באנגרים 🏠';
+  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillText(line1,3,3); ctx.fillText(line2,3,fs+15);
   ctx.strokeStyle='#fff'; ctx.lineWidth=7; ctx.lineJoin='round';
-  ctx.strokeText('🎉 מזל טוב אדם! 🎉',0,0);
+  ctx.strokeText(line1,0,0); ctx.strokeText(line2,0,fs+12);
   const rg=ctx.createLinearGradient(-fs*3,0,fs*3,0);
   rg.addColorStop(0,'#ff4444'); rg.addColorStop(.25,'#ffcc00');
   rg.addColorStop(.5,'#44ff88'); rg.addColorStop(.75,'#44aaff'); rg.addColorStop(1,'#cc44ff');
-  ctx.fillStyle=rg; ctx.fillText('🎉 מזל טוב אדם! 🎉',0,0);
-  ctx.font=`bold ${fs*.48}px Arial,sans-serif`; ctx.fillStyle='#fff';
-  ctx.strokeStyle='rgba(0,0,60,.55)'; ctx.lineWidth=4;
-  ctx.strokeText('BALAGAN HOUSE 🏠',0,fs+12); ctx.fillText('BALAGAN HOUSE 🏠',0,fs+12);
+  ctx.fillStyle=rg; ctx.fillText(line1,0,0); ctx.fillText(line2,0,fs+12);
   ctx.restore();
 }
 
