@@ -46,6 +46,7 @@ audio.src = SONG;
 // ── Ars images ────────────────────────────────────────────────────────────────
 const arsImgs = [1,2,3].map(n => { const img = new Image(); img.src = `Images/ars${n}.png`; return img; });
 const missileImg = new Image(); missileImg.src = 'Images/missile.png';
+const sverdiImg  = new Image(); sverdiImg.src  = 'Images/sverdi.png';
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
 function playSound(snd) { snd.currentTime = 0; snd.play().catch(() => {}); }
@@ -445,106 +446,15 @@ function drawGround() {
   }
 }
 
-// ── Runner (pixel art) ────────────────────────────────────────────────────────
-// x,y = feet. angle = Math.PI when dead (flipped). dead = show X eyes.
+// ── Runner ────────────────────────────────────────────────────────────────────
 function drawRunner(x, y, _fc, jumping, angle, dead) {
+  if (!sverdiImg.complete || !sverdiImg.naturalWidth) return;
+  const drawH = 96;
+  const drawW = drawH * sverdiImg.naturalWidth / sverdiImg.naturalHeight;
   ctx.save();
   ctx.translate(x, y);
   if (angle) ctx.rotate(angle);
-
-  const ph = jumping ? 2 : Math.floor(_fc / 9) % 2;
-
-  // ── Shoes ──
-  ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#aaa'; ctx.lineWidth = 1;
-  if (ph === 0) {
-    ctx.fillRect(-18,-12,16,10); ctx.strokeRect(-18,-12,16,10);
-    ctx.fillRect(2,-8,14,8);    ctx.strokeRect(2,-8,14,8);
-  } else if (ph === 1) {
-    ctx.fillRect(-16,-8,14,8);  ctx.strokeRect(-16,-8,14,8);
-    ctx.fillRect(2,-12,16,10);  ctx.strokeRect(2,-12,16,10);
-  } else {
-    ctx.fillRect(-18,-16,16,8); ctx.strokeRect(-18,-16,16,8);
-    ctx.fillRect(2,-14,16,8);   ctx.strokeRect(2,-14,16,8);
-  }
-
-  // ── Legs ──
-  ctx.fillStyle = '#2a2a5a';
-  if (ph === 0) {
-    ctx.fillRect(-12,-12,10,24); ctx.fillRect(2,-8,10,22);
-  } else if (ph === 1) {
-    ctx.fillRect(-12,-8,10,22);  ctx.fillRect(2,-12,10,24);
-  } else {
-    ctx.fillRect(-14,-16,10,26); ctx.fillRect(2,-14,10,26);
-  }
-
-  // ── Shorts ──
-  ctx.fillStyle = '#2a2a5a';
-  ctx.fillRect(-14,-40,28,16);
-  ctx.fillStyle = '#3a3a8a';
-  ctx.fillRect(-14,-40,4,16); ctx.fillRect(10,-40,4,16); // stripes
-
-  // ── Shirt ──
-  ctx.fillStyle = '#4a90d9';
-  ctx.fillRect(-13,-66,26,28);
-  ctx.fillStyle = '#3a80c9';
-  ctx.fillRect(-13,-66,26,4); // collar stripe
-  // Pixel "1"
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(-2,-62,4,16);   // bar
-  ctx.fillRect(-4,-62,8,4);    // top flag
-  ctx.fillRect(-4,-46,8,4);    // base
-
-  // ── Arms ──
-  ctx.fillStyle = '#c8844a';
-  if (ph === 0) {
-    ctx.fillRect(-23,-64,10,22); ctx.fillRect(13,-74,10,22);
-  } else if (ph === 1) {
-    ctx.fillRect(-23,-74,10,22); ctx.fillRect(13,-64,10,22);
-  } else {
-    ctx.fillRect(-24,-74,10,20); ctx.fillRect(14,-74,10,20);
-  }
-
-  // ── Neck ──
-  ctx.fillStyle = '#f5c87a';
-  ctx.fillRect(-5,-70,10,6);
-
-  // ── Head (square) ──
-  ctx.fillStyle = '#f5c87a';
-  ctx.fillRect(-14,-96,28,28);
-
-  // ── Ears ──
-  ctx.fillRect(-18,-88,4,10); ctx.fillRect(14,-88,4,10);
-
-  // ── Hair (dark block + pixel spikes) ──
-  ctx.fillStyle = '#2a1400';
-  ctx.fillRect(-14,-96,28,10);
-  ctx.fillRect(-12,-108,6,14);
-  ctx.fillRect(-4,-112,6,18);
-  ctx.fillRect(2,-110,6,16);
-  ctx.fillRect(8,-106,6,12);
-
-  // ── Eyes ──
-  if (dead) {
-    // X eyes
-    ctx.fillStyle = '#333';
-    ctx.fillRect(-10,-86,2,2); ctx.fillRect(-6,-82,2,2);
-    ctx.fillRect(-10,-82,2,2); ctx.fillRect(-6,-86,2,2);
-    ctx.fillRect(2,-86,2,2);   ctx.fillRect(6,-82,2,2);
-    ctx.fillRect(2,-82,2,2);   ctx.fillRect(6,-86,2,2);
-  } else {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(-10,-86,8,8); ctx.fillRect(2,-86,8,8);
-    ctx.fillStyle = '#333';
-    ctx.fillRect(-8,-84,4,4);  ctx.fillRect(4,-84,4,4);
-    ctx.fillStyle = 'white';
-    ctx.fillRect(-7,-85,2,2);  ctx.fillRect(5,-85,2,2);
-    // Pixel smile
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(-5,-74,2,2);
-    ctx.fillRect(-3,-72,8,2);
-    ctx.fillRect(5,-74,2,2);
-  }
-
+  ctx.drawImage(sverdiImg, -drawW/2, -drawH, drawW, drawH);
   ctx.restore();
 }
 
