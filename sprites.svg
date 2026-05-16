@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="256" viewBox="0 0 512 256">
+  <!-- SPRITE SHEET: adam_game -->
+  <!-- Each sprite is 64x64 unless noted -->
+
+  <!-- ROCKET frame 0: idle -->
+  <g id="rocket-0" transform="translate(0,0)">
+    <!-- body -->
+    <ellipse cx="32" cy="36" rx="10" ry="20" fill="#e8e8f0" stroke="#555" stroke-width="1.5"/>
+    <!-- nose -->
+    <polygon points="32,8 22,26 42,26" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+    <!-- window -->
+    <circle cx="32" cy="34" r="5" fill="#7ecfff" stroke="#3399cc" stroke-width="1"/>
+    <!-- fins left -->
+    <polygon points="22,46 14,58 22,56" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+    <!-- fins right -->
+    <polygon points="42,46 50,58 42,56" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+    <!-- exhaust (small flame) -->
+    <ellipse cx="32" cy="58" rx="5" ry="5" fill="#ffaa00" opacity="0.8"/>
+    <ellipse cx="32" cy="60" rx="3" ry="4" fill="#ffff00" opacity="0.9"/>
+  </g>
+
+  <!-- ROCKET frame 1: thrust medium -->
+  <g id="rocket-1" transform="translate(64,0)">
+    <ellipse cx="32" cy="36" rx="10" ry="20" fill="#e8e8f0" stroke="#555" stroke-width="1.5"/>
+    <polygon points="32,8 22,26 42,26" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+    <circle cx="32" cy="34" r="5" fill="#7ecfff" stroke="#3399cc" stroke-width="1"/>
+    <polygon points="22,46 14,58 22,56" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+    <polygon points="42,46 50,58 42,56" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+    <!-- bigger flame -->
+    <ellipse cx="32" cy="60" rx="6" ry="8" fill="#ff6600" opacity="0.9"/>
+    <ellipse cx="32" cy="62" rx="4" ry="7" fill="#ffaa00" opacity="0.9"/>
+    <ellipse cx="32" cy="64" rx="2" ry="5" fill="#ffff00" opacity="1"/>
+  </g>
+
+  <!-- ROCKET frame 2: thrust high -->
+  <g id="rocket-2" transform="translate(128,0)">
+    <ellipse cx="32" cy="34" rx="10" ry="20" fill="#e8e8f0" stroke="#555" stroke-width="1.5"/>
+    <polygon points="32,6 22,24 42,24" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+    <circle cx="32" cy="32" r="5" fill="#7ecfff" stroke="#3399cc" stroke-width="1"/>
+    <polygon points="22,44 14,56 22,54" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+    <polygon points="42,44 50,56 42,54" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+    <!-- max flame -->
+    <ellipse cx="32" cy="58" rx="7" ry="10" fill="#ff3300" opacity="0.85"/>
+    <ellipse cx="32" cy="61" rx="5" ry="9" fill="#ff6600" opacity="0.9"/>
+    <ellipse cx="32" cy="64" rx="3" ry="6" fill="#ffcc00" opacity="1"/>
+  </g>
+
+  <!-- ROCKET frame 3: jump pose (tilted) -->
+  <g id="rocket-3" transform="translate(192,0)">
+    <g transform="translate(32,32) rotate(-20) translate(-32,-32)">
+      <ellipse cx="32" cy="36" rx="10" ry="20" fill="#e8e8f0" stroke="#555" stroke-width="1.5"/>
+      <polygon points="32,8 22,26 42,26" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+      <circle cx="32" cy="34" r="5" fill="#7ecfff" stroke="#3399cc" stroke-width="1"/>
+      <polygon points="22,46 14,58 22,56" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+      <polygon points="42,46 50,58 42,56" fill="#ff4444" stroke="#cc2222" stroke-width="1"/>
+      <ellipse cx="32" cy="60" rx="7" ry="11" fill="#ff4400" opacity="0.9"/>
+      <ellipse cx="32" cy="63" rx="4" ry="8" fill="#ffaa00" opacity="1"/>
+    </g>
+  </g>
+
+  <!-- ALEPH obstacle (128x128 at position 256,0) -->
+  <g id="aleph" transform="translate(256,0)">
+    <rect width="128" height="128" fill="none"/>
+    <!-- Hebrew Aleph א drawn as a stylized cartoon -->
+    <text x="64" y="105"
+          font-family="serif" font-size="110" font-weight="bold"
+          text-anchor="middle" fill="#2244aa" stroke="#112288" stroke-width="2"
+          style="font-family: 'Times New Roman', serif;">א</text>
+    <!-- cartoon eyes on the aleph -->
+    <circle cx="52" cy="38" r="5" fill="white" stroke="#333" stroke-width="1"/>
+    <circle cx="54" cy="38" r="2.5" fill="#222"/>
+    <circle cx="72" cy="44" r="5" fill="white" stroke="#333" stroke-width="1"/>
+    <circle cx="74" cy="44" r="2.5" fill="#222"/>
+  </g>
+
+  <!-- HOUSE with palm tree (256x128, at position 0,128) -->
+  <g id="house" transform="translate(0,128)">
+    <!-- ground patch -->
+    <rect x="10" y="100" width="240" height="18" rx="4" fill="#6dbb4a"/>
+    <!-- house body -->
+    <rect x="50" y="55" width="130" height="65" fill="#f5e6c8" stroke="#c4a46b" stroke-width="2"/>
+    <!-- roof -->
+    <polygon points="40,58 115,15 190,58" fill="#e05a2b" stroke="#b03a1b" stroke-width="2"/>
+    <!-- door -->
+    <rect x="97" y="85" width="36" height="35" rx="3" fill="#8B5E3C" stroke="#5a3a1a" stroke-width="1.5"/>
+    <circle cx="128" cy="103" r="3" fill="#ffd700"/>
+    <!-- window left -->
+    <rect x="60" y="70" width="28" height="24" rx="2" fill="#aaddff" stroke="#6699bb" stroke-width="1.5"/>
+    <line x1="74" y1="70" x2="74" y2="94" stroke="#6699bb" stroke-width="1"/>
+    <line x1="60" y1="82" x2="88" y2="82" stroke="#6699bb" stroke-width="1"/>
+    <!-- window right -->
+    <rect x="140" y="70" width="28" height="24" rx="2" fill="#aaddff" stroke="#6699bb" stroke-width="1.5"/>
+    <line x1="154" y1="70" x2="154" y2="94" stroke="#6699bb" stroke-width="1"/>
+    <line x1="140" y1="82" x2="168" y2="82" stroke="#6699bb" stroke-width="1"/>
+    <!-- chimney -->
+    <rect x="155" y="20" width="18" height="28" fill="#c0704a" stroke="#8b4a2a" stroke-width="1.5"/>
+    <!-- palm tree trunk -->
+    <path d="M210,100 Q215,70 208,45" stroke="#8B6914" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <!-- palm leaves -->
+    <ellipse cx="208" cy="40" rx="22" ry="8" fill="#3a9a2a" transform="rotate(-30,208,40)"/>
+    <ellipse cx="208" cy="40" rx="22" ry="8" fill="#4ab83a" transform="rotate(20,208,40)"/>
+    <ellipse cx="208" cy="40" rx="22" ry="8" fill="#3a9a2a" transform="rotate(70,208,40)"/>
+    <ellipse cx="208" cy="40" rx="20" ry="7" fill="#5acc4a" transform="rotate(-75,208,40)"/>
+    <!-- coconuts -->
+    <circle cx="210" cy="50" r="5" fill="#8B4513"/>
+    <circle cx="202" cy="53" r="5" fill="#7a3c10"/>
+  </g>
+
+  <!-- Labels (meta, not used in game) -->
+  <text x="2" y="250" font-size="9" fill="#aaa">rocket-0(0,0) rocket-1(64,0) rocket-2(128,0) rocket-3(192,0) | aleph(256,0 128x128) | house(0,128 256x128)</text>
+</svg>

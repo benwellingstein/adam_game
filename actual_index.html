@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Adam's Rocket Game 🚀</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #87CEEB; touch-action: none; user-select: none; }
+    canvas { display: block; }
+    #overlay {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: rgba(0, 20, 60, 0.7);
+      color: white;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #overlay h1 { font-size: clamp(1.8rem, 6vw, 4rem); margin-bottom: 0.8rem; line-height: 1.2; }
+    #overlay p  { font-size: clamp(1rem, 3vw, 1.6rem); opacity: 0.9; margin-top: 0.4rem; }
+    #overlay.hidden { display: none; }
+    #progress-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 6px; background: rgba(0,0,0,0.25);
+    }
+    #progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #44aaff, #ff44aa);
+      transition: width 0.5s linear;
+    }
+    #progress-bar.hidden { display: none; }
+  </style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="progress-bar" class="hidden"><div id="progress-fill"></div></div>
+<div id="overlay">
+  <h1 id="ov-title">🚀 משחק הרקטה של אדם 🚀</h1>
+  <p id="ov-sub">Loading music...</p>
+</div>
+
+<audio id="audio" preload="auto"></audio>
+
+<script>
+// ─── Setup ───────────────────────────────────────────────────────────────────
+const SONG = 'SVERDY%20ADAM%20BALAGAN%20HOUSE%2030%20%5BNew%20Mix%5D%20-%20%5BPRECISE%20MASTER%5D%2044.1Khz%20320Kbps.mp3';
+
+const canvas  = document.getElementById('game');
+const ctx     = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const ovTitle = document.getElementById('ov-title');
+const ovSub   = document.getElementById('ov-sub');
+const progBar = document.getElementById('progress-bar');
+const progFill= document.getElementById('progress-fill');
+const audio   = document.getElementById('audio');
+
+audio.src = SONG;
+
+let songDuration = 139.781; // fallback; overwritten on loadedmetadata
+
+// ─── State machine ────────────────────────────────────────────────────────────
+const S = { LOADING:0, READY:1, PLAYING:2, DEAD:3, ENDING:4, CELEBRATION:5 };
+let state = S.LOADING;
+let fc = 0; // frame counter
+
+// ─── Canvas resize ────────────────────────────────────────────────────────────
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', () => { resize(); if (state >= S.PLAYING) initRocket(); });
+resize();
+
+const GND_OFF = () => canvas.height - Math.max(80, canvas.height * 0.12);
+
+// ─── Rocket ───────────────────────────────────────────────────────────────────
+const R = { x:0, y:0, vy:0, onGround:true, entering:false, enterAlpha:1 };
+const GRAV   = 0.72;
+const JUMP_V = () => -Math.sqrt(2 * GRAV * canvas.height * 0.32); // jump ~32% of screen height
+
+function initRocket() {
+  R.x = Math.max(130, canvas.width * 0.13);
+  R.y = GND_OFF() - 32;
+  R.vy = 0;
+  R.onGround = true;
+  R.entering = false;
+  R.enterAlpha = 1;
+}
+
+// ─── Obstacles ────────────────────────────────────────────────────────────────
+let obstacles = [], spawnTimer = 0, nextSpawn = 90;
+function newSpawn() { return 75 + Math.random() * 80; }
+
+// ─── Speed + scroll ───────────────────────────────────────────────────────────
+let speed = 5, gndScroll = 0;
+
+// ─── House ────────────────────────────────────────────────────────────────────
+let houseX = 0, houseActive = false;
+const HOUSE_W = 260;
+
+// ─── Particles ───────────────────────────────────────────────────────────────
+let confetti  = [];
+let fireworks = [];
+let celebTick = 0;
+
+// ─── Death ────────────────────────────────────────────────────────────────────
+let deadTick = 0, deathParticles = [];
+
+// ─── Input ───────────────────────────────────────────────────────────────────
+function onTap() {
+  if (state === S.READY) { startGame(); return; }
+  if (state === S.DEAD)  { return; }
+  if (state === S.PLAYING && R.onGround) {
+    R.vy = JUMP_V();
+    R.onGround = false;
+  }
+}
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); onTap(); }
+});
+canvas.addEventListener('touchstart', e => { e.preventDefault(); onTap(); }, { passive: false });
+canvas.addEventListener('mousedown',  () => onTap());
+
+// ─── Audio events ─────────────────────────────────────────────────────────────
+audio.addEventListener('loadedmetadata', () => {
+  songDuration = audio.duration || songDuration;
+  goReady();
+});
+audio.addEventListener('error', goReady); // allow play without audio
+
+function goReady() {
+  state = S.READY;
+  ovTitle.textContent = '🚀 משחק הרקטה של אדם 🚀';
+  ovSub.textContent   = 'לחץ / הקש להתחלה';
+  overlay.classList.remove('hidden');
+  initRocket();
+}
+
+// ─── Start game ───────────────────────────────────────────────────────────────
+function startGame() {
+  state = S.PLAYING;
+  overlay.classList.add('hidden');
+  progBar.classList.remove('hidden');
+
+  obstacles = []; spawnTimer = 0; nextSpawn = newSpawn();
+  speed = 5; gndScroll = 0;
+  houseActive = false; houseX = 0;
+  confetti = []; fireworks = []; deathParticles = [];
+  celebTick = 0;
+  initRocket();
+
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
+}
+
+// ─── UPDATE ───────────────────────────────────────────────────────────────────
+function update() {
+  fc++;
+  if (state === S.PLAYING)      updatePlaying();
+  else if (state === S.ENDING)  updateEnding();
+  else if (state === S.DEAD)    updateDead();
+  else if (state === S.CELEBRATION) updateCeleb();
+}
+
+function updatePlaying() {
+  speed = 5 + Math.min(audio.currentTime * 0.025, 5);
+  gndScroll = (gndScroll + speed) % 80;
+
+  // Rocket physics
+  if (!R.onGround) {
+    R.vy += GRAV;
+    R.y  += R.vy;
+    const floor = GND_OFF() - 32;
+    if (R.y >= floor) { R.y = floor; R.vy = 0; R.onGround = true; }
+  }
+
+  // End trigger
+  const left = songDuration - audio.currentTime;
+  if (!isNaN(left) && left <= 2 && !houseActive) {
+    state = S.ENDING;
+    houseActive = true;
+    houseX = canvas.width + 30;
+    obstacles = []; // clear obstacles so path is clear
+    return;
+  }
+
+  // Spawn
+  spawnTimer++;
+  if (spawnTimer >= nextSpawn) {
+    spawnTimer = 0; nextSpawn = newSpawn();
+    obstacles.push({
+      x: canvas.width + 40,
+      size: 48 + Math.random() * 44,
+      y: GND_OFF()
+    });
+  }
+
+  // Move obstacles
+  obstacles = obstacles.filter(o => { o.x -= speed; return o.x > -80; });
+
+  // Collision
+  if (collides()) killRocket();
+
+  // Progress
+  if (!isNaN(audio.duration))
+    progFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+}
+
+function collides() {
+  const rW = 11, rH = 22;
+  for (const o of obstacles) {
+    const oW = o.size * 0.28, oH = o.size * 0.88;
+    if (Math.abs(R.x - o.x) < rW + oW &&
+        R.y + rH > o.y - oH && R.y - rH < o.y) return true;
+  }
+  return false;
+}
+
+function killRocket() {
+  state = S.DEAD;
+  deadTick = 0;
+  audio.pause();
+  for (let i = 0; i < 36; i++) {
+    const a = (Math.PI * 2 * i) / 36, sp = 2 + Math.random() * 5;
+    deathParticles.push({
+      x: R.x, y: R.y,
+      vx: Math.cos(a)*sp, vy: Math.sin(a)*sp,
+      color: ['#ff4444','#ffaa00','#ffffff','#7ecfff'][i%4],
+      r: 4 + Math.random() * 5, life: 1
+    });
+  }
+}
+
+function updateDead() {
+  deadTick++;
+  deathParticles = deathParticles.filter(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.25; p.life -= 0.025;
+    return p.life > 0;
+  });
+  if (deadTick > 100) {
+    deathParticles = [];
+    state = S.READY;
+    overlay.classList.remove('hidden');
+    ovTitle.textContent = '💥 עוד פעם!';
+    ovSub.textContent   = 'לחץ / הקש לנסות שוב';
+    progBar.classList.add('hidden');
+    initRocket();
+  }
+}
+
+function updateEnding() {
+  gndScroll = (gndScroll + speed) % 80;
+
+  // Keep rocket running on ground
+  if (!R.onGround) {
+    R.vy += GRAV;
+    R.y  += R.vy;
+    const floor = GND_OFF() - 32;
+    if (R.y >= floor) { R.y = floor; R.vy = 0; R.onGround = true; }
+  }
+
+  // House slides in fast
+  const houseSpeed = (canvas.width / 55); // ~55 frames to cross the screen
+  houseX -= houseSpeed;
+
+  // Door center is at houseX - 0 (centered on houseX)
+  // Rocket enters when door reaches rocket x
+  if (!R.entering && houseX <= R.x + 55) {
+    R.entering = true;
+  }
+
+  if (R.entering) {
+    R.enterAlpha -= 0.045;
+    R.x += 3; // rocket moves toward door
+    if (R.enterAlpha <= 0) beginCelebration();
+  }
+
+  if (!isNaN(audio.duration))
+    progFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+}
+
+function beginCelebration() {
+  state = S.CELEBRATION;
+  celebTick = 0;
+  confetti = []; fireworks = [];
+  spawnConfetti(120);
+  spawnFirework();
+}
+
+function updateCeleb() {
+  celebTick++;
+  if (celebTick % 28 === 0) spawnConfetti(60);
+  if (celebTick % 55 === 0) spawnFirework();
+
+  confetti = confetti.filter(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.06;
+    p.rot += p.rotV; p.life -= 0.004;
+    return p.life > 0 && p.y < canvas.height + 60;
+  });
+  fireworks = fireworks.filter(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.12;
+    p.vx *= 0.97; p.life -= 0.014 + Math.random() * 0.006;
+    return p.life > 0;
+  });
+}
+
+function spawnConfetti(n) {
+  const cols = ['#ff4444','#ff88bb','#ffcc00','#44ff88','#44aaff','#cc44ff','#ffffff','#ffaa44'];
+  for (let i = 0; i < n; i++) {
+    confetti.push({
+      x: Math.random() * canvas.width,
+      y: -10 - Math.random() * canvas.height * 0.5,
+      vx: (Math.random() - 0.5) * 3,
+      vy: 1.5 + Math.random() * 4,
+      rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.18,
+      color: cols[Math.floor(Math.random() * cols.length)],
+      w: 7 + Math.random() * 9, h: 3 + Math.random() * 5,
+      life: 0.8 + Math.random() * 0.2
+    });
+  }
+}
+
+function spawnFirework() {
+  const fx = 80 + Math.random() * (canvas.width - 160);
+  const fy = 40 + Math.random() * canvas.height * 0.45;
+  const hue = Math.random() * 360;
+  for (let i = 0; i < 50; i++) {
+    const a = (Math.PI * 2 * i) / 50, sp = 3 + Math.random() * 6;
+    fireworks.push({
+      x: fx, y: fy,
+      vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+      color: `hsl(${hue + Math.random()*30},90%,${55 + Math.random()*20}%)`,
+      r: 2.5 + Math.random() * 3, life: 1
+    });
+  }
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawSky();
+  drawClouds();
+  drawGround();
+
+  if (state === S.CELEBRATION) {
+    drawHouse(canvas.width * 0.5, GND_OFF());
+    drawCelebParticles();
+    drawCelebText();
+    return;
+  }
+
+  for (const o of obstacles) drawAleph(o.x, o.y, o.size);
+  if (houseActive)            drawHouse(houseX, GND_OFF());
+
+  if (R.enterAlpha > 0) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, R.enterAlpha);
+    drawRocket(R.x, R.y, !R.onGround);
+    ctx.restore();
+  }
+
+  if (state === S.DEAD) {
+    for (const p of deathParticles) {
+      ctx.save();
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+}
+
+// ─── Background ───────────────────────────────────────────────────────────────
+function drawSky() {
+  const g = ctx.createLinearGradient(0, 0, 0, GND_OFF());
+  g.addColorStop(0,   '#4fc3f7');
+  g.addColorStop(0.5, '#87CEEB');
+  g.addColorStop(1,   '#c9eeff');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+let cloudOff = 0;
+const CLOUD_POS = [0.12, 0.38, 0.65, 0.88].map((fx, i) => ({ fx, fy: 0.05 + i * 0.04, r: 35 + i * 8 }));
+function drawClouds() {
+  cloudOff = (cloudOff + 0.25) % canvas.width;
+  ctx.fillStyle = 'rgba(255,255,255,0.82)';
+  for (const c of CLOUD_POS) {
+    const cx = (c.fx * canvas.width - cloudOff * 0.4 + canvas.width * 2) % canvas.width;
+    const cy = c.fy * canvas.height;
+    const r  = c.r;
+    ctx.beginPath();
+    ctx.arc(cx,         cy,          r,       0, Math.PI * 2);
+    ctx.arc(cx + r*0.8, cy - r*0.35, r*0.65, 0, Math.PI * 2);
+    ctx.arc(cx + r*1.5, cy,          r*0.75, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawGround() {
+  const gy = GND_OFF();
+  const g = ctx.createLinearGradient(0, gy, 0, canvas.height);
+  g.addColorStop(0,    '#7dcf52');
+  g.addColorStop(0.12, '#5aaa38');
+  g.addColorStop(1,    '#3a7020');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, gy, canvas.width, canvas.height - gy);
+
+  ctx.strokeStyle = '#4a8a30';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, gy); ctx.lineTo(canvas.width, gy);
+  ctx.stroke();
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([28, 28]);
+  ctx.lineDashOffset = -gndScroll;
+  ctx.beginPath();
+  ctx.moveTo(0, gy + 6); ctx.lineTo(canvas.width, gy + 6);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ─── Rocket ───────────────────────────────────────────────────────────────────
+function drawRocket(x, y, jumping) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (jumping) ctx.rotate(-0.22);
+
+  // Flame
+  const ph    = Math.floor(fc / 5) % 3;
+  const fh    = [10, 16, 13][ph];
+  const fGrad = ctx.createRadialGradient(0, 32, 0, 0, 34, fh + 6);
+  fGrad.addColorStop(0,   '#ffffff');
+  fGrad.addColorStop(0.2, '#ffff00');
+  fGrad.addColorStop(0.6, '#ff6600');
+  fGrad.addColorStop(1,   'rgba(255,30,0,0)');
+  ctx.fillStyle = fGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 32, 7, fh, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Body
+  ctx.fillStyle = '#eeeef8';
+  ctx.strokeStyle = '#55556a';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.ellipse(0, 6, 13, 25, 0, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
+
+  // Stripes
+  ctx.strokeStyle = 'rgba(200,200,220,0.7)';
+  ctx.lineWidth = 3;
+  for (const sy of [-4, 4, 12]) {
+    ctx.beginPath();
+    ctx.moveTo(-11, sy); ctx.lineTo(11, sy);
+    ctx.stroke();
+  }
+
+  // Nose cone
+  ctx.fillStyle = '#ff4444';
+  ctx.strokeStyle = '#cc2222';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, -24); ctx.lineTo(-13, -2); ctx.lineTo(13, -2);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+
+  // Window
+  ctx.fillStyle = '#7ecfff';
+  ctx.strokeStyle = '#3399cc';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(0, 5, 7, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.beginPath();
+  ctx.arc(-2, 2, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Fins
+  ctx.fillStyle = '#ff4444';
+  ctx.strokeStyle = '#cc2222';
+  ctx.lineWidth = 1;
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(side * 13, 18);
+    ctx.lineTo(side * 25, 32);
+    ctx.lineTo(side * 13, 28);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+// ─── Aleph obstacle ───────────────────────────────────────────────────────────
+function drawAleph(x, y, size) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.beginPath();
+  ctx.ellipse(0, 4, size * 0.3, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.font = `bold ${size}px "Times New Roman", Georgia, serif`;
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'bottom';
+
+  ctx.strokeStyle = '#112299';
+  ctx.lineWidth   = 5;
+  ctx.lineJoin    = 'round';
+  ctx.strokeText('א', 0, 0);
+
+  ctx.fillStyle = '#2244cc';
+  ctx.fillText('א', 0, 0);
+
+  // Cartoon eyes
+  const ey = -size * 0.58;
+  const er = size * 0.09;
+  for (const [ex, eo] of [[-size*0.18, 0], [size*0.1, -size*0.05]]) {
+    ctx.fillStyle = 'white';
+    ctx.beginPath(); ctx.arc(ex, ey + eo, er, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.arc(ex + er*0.3, ey + eo, er*0.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// ─── House + palm tree ────────────────────────────────────────────────────────
+function drawHouse(cx, groundY) {
+  const W = 220, H = 165;
+  ctx.save();
+  ctx.translate(cx, groundY);
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.13)';
+  ctx.beginPath();
+  ctx.ellipse(15, 4, 155, 13, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Body
+  ctx.fillStyle = '#f5e6c8';
+  ctx.strokeStyle = '#c4a46b';
+  ctx.lineWidth = 2;
+  ctx.fillRect(-W/2, -H, W, H);
+  ctx.strokeRect(-W/2, -H, W, H);
+
+  // Roof
+  ctx.fillStyle = '#e05a2b';
+  ctx.strokeStyle = '#b03a1b';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-W/2 - 15, -H);
+  ctx.lineTo(0, -H - 68);
+  ctx.lineTo(W/2 + 15, -H);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+
+  // Chimney
+  ctx.fillStyle = '#c0704a';
+  ctx.strokeStyle = '#8b4a2a';
+  ctx.lineWidth = 1.5;
+  ctx.fillRect(55, -H - 48, 22, 38);
+  ctx.strokeRect(55, -H - 48, 22, 38);
+
+  // Windows
+  for (const wox of [-W/2 + 18, W/2 - 58]) {
+    ctx.fillStyle = '#aaddff';
+    ctx.strokeStyle = '#6699bb';
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(wox, -H + 28, 40, 34);
+    ctx.strokeRect(wox, -H + 28, 40, 34);
+    ctx.beginPath();
+    ctx.moveTo(wox+20, -H+28); ctx.lineTo(wox+20, -H+62);
+    ctx.moveTo(wox,    -H+45); ctx.lineTo(wox+40, -H+45);
+    ctx.stroke();
+  }
+
+  // Door (centered) — open slightly as rocket enters
+  const dW = 52, dH = 72;
+  ctx.fillStyle = '#8B5E3C';
+  ctx.strokeStyle = '#5a3a1a';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-dW/2, 0);
+  ctx.lineTo(-dW/2, -dH);
+  ctx.quadraticCurveTo(-dW/2, -dH - 10, 0, -dH - 10);
+  ctx.quadraticCurveTo(dW/2,  -dH - 10, dW/2, -dH);
+  ctx.lineTo(dW/2, 0);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  // Knob
+  ctx.fillStyle = '#ffd700';
+  ctx.beginPath();
+  ctx.arc(dW/2 - 10, -dH/2, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Palm tree
+  const tx = W/2 + 45, ty = 0;
+  ctx.strokeStyle = '#8B6914';
+  ctx.lineWidth = 10;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(tx, ty);
+  ctx.bezierCurveTo(tx+12, ty-35, tx+6, ty-68, tx-6, ty-105);
+  ctx.stroke();
+
+  const leaves = [
+    { a: -0.5, c: '#3a9a2a' }, { a: 0.35, c: '#4ab83a' },
+    { a: 1.1,  c: '#5acc4a' }, { a: -1.4, c: '#3a9a2a' },
+    { a: -2.1, c: '#4ab83a' }
+  ];
+  for (const l of leaves) {
+    ctx.save();
+    ctx.translate(tx - 6, ty - 105);
+    ctx.rotate(l.a);
+    ctx.fillStyle = l.c;
+    ctx.beginPath();
+    ctx.ellipse(28, 0, 32, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Coconuts
+  for (const [ex, ey] of [[tx-3, ty-92], [tx-13, ty-98]]) {
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath(); ctx.arc(ex, ey, 7, 0, Math.PI*2); ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// ─── Celebration particles ────────────────────────────────────────────────────
+function drawCelebParticles() {
+  for (const p of fireworks) {
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle   = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  for (const p of confetti) {
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    ctx.restore();
+  }
+}
+
+function drawCelebText() {
+  if (celebTick < 30) return;
+  const pulse = 1 + Math.sin(fc * 0.07) * 0.05;
+  const fs    = Math.min(canvas.width * 0.085, 64);
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height * 0.33);
+  ctx.scale(pulse, pulse);
+  ctx.font      = `bold ${fs}px Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillText('🎉 מזל טוב אדם! 🎉', 3, 3);
+
+  // Outline
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth   = 7;
+  ctx.lineJoin    = 'round';
+  ctx.strokeText('🎉 מזל טוב אדם! 🎉', 0, 0);
+
+  // Rainbow fill
+  const rg = ctx.createLinearGradient(-fs * 3, 0, fs * 3, 0);
+  rg.addColorStop(0,    '#ff4444');
+  rg.addColorStop(0.25, '#ffcc00');
+  rg.addColorStop(0.5,  '#44ff88');
+  rg.addColorStop(0.75, '#44aaff');
+  rg.addColorStop(1,    '#cc44ff');
+  ctx.fillStyle = rg;
+  ctx.fillText('🎉 מזל טוב אדם! 🎉', 0, 0);
+
+  // Sub text
+  ctx.font      = `bold ${fs * 0.5}px Arial, sans-serif`;
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = 'rgba(0,0,60,0.6)';
+  ctx.lineWidth = 4;
+  ctx.strokeText('BALAGAN HOUSE 🏠', 0, fs + 10);
+  ctx.fillText  ('BALAGAN HOUSE 🏠', 0, fs + 10);
+  ctx.restore();
+}
+
+// ─── Main loop ────────────────────────────────────────────────────────────────
+function loop() {
+  update();
+  render();
+  requestAnimationFrame(loop);
+}
+
+audio.load();
+loop();
+</script>
+</body>
+</html>
