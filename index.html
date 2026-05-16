@@ -146,11 +146,8 @@ function startGame() {
 }
 
 // ── UPDATE ────────────────────────────────────────────────────────────────────
-let explosion = null;
-
 function update(dt) {
   fc += dt;
-  if (explosion) { explosion.tick += dt; if (explosion.tick >= 45) explosion = null; }
   if      (state === S.PLAYING)     updatePlaying(dt);
   else if (state === S.ENDING)      updateEnding(dt);
   else if (state === S.DEAD)        updateDead(dt);
@@ -247,7 +244,6 @@ const ROCKET_DEATH_TEXTS = [
 function killRunner(killedBy) {
   state = S.DEAD; deadTick = 0; audio.pause(); lastKiller = killedBy;
   playSound(sfxDeaths[Math.floor(Math.random() * sfxDeaths.length)]);
-  if (killedBy === 'rocket') explosion = { x: R.x, y: R.y - 48, tick: 0 };
   R.angle = Math.PI;
   R.deadVY = -10;
   R.onGround = false;
@@ -351,7 +347,6 @@ function render() {
       ctx.restore();
     }
   }
-  if (explosion) drawExplosion();
 }
 
 // ── Sky ───────────────────────────────────────────────────────────────────────
@@ -532,41 +527,6 @@ function drawCelebText() {
   rg.addColorStop(0,'#ff4444'); rg.addColorStop(.25,'#ffcc00');
   rg.addColorStop(.5,'#44ff88'); rg.addColorStop(.75,'#44aaff'); rg.addColorStop(1,'#cc44ff');
   ctx.fillStyle=rg; ctx.fillText(line1,0,0); ctx.fillText(line2,0,fs+12);
-  ctx.restore();
-}
-
-// ── Cartoon explosion ─────────────────────────────────────────────────────────
-function drawExplosion() {
-  const t = explosion.tick / 45;
-  const radius = 80 * Math.sin(t * Math.PI);
-  const alpha  = t < 0.65 ? 1 : 1 - (t - 0.65) / 0.35;
-  const spikes = 10;
-
-  function star(outerR, innerR, color) {
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    for (let i = 0; i < spikes * 2; i++) {
-      const angle = (i * Math.PI / spikes) - Math.PI / 2;
-      const r = i % 2 === 0 ? outerR : innerR;
-      i === 0 ? ctx.moveTo(Math.cos(angle)*r, Math.sin(angle)*r)
-              : ctx.lineTo(Math.cos(angle)*r, Math.sin(angle)*r);
-    }
-    ctx.closePath(); ctx.fill();
-  }
-
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(explosion.x, explosion.y);
-  star(radius,       radius * 0.45, '#c0392b');
-  star(radius * 0.8, radius * 0.38, '#e67e22');
-  star(radius * 0.6, radius * 0.28, '#f1c40f');
-  star(radius * 0.35,radius * 0.18, '#fff');
-
-  const fs = Math.max(12, radius * 0.45);
-  ctx.font = `bold ${fs|0}px Arial, sans-serif`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#333'; ctx.fillText('BOOM!', 2, 2);
-  ctx.fillStyle = '#fff'; ctx.fillText('BOOM!', 0, 0);
   ctx.restore();
 }
 
