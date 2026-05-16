@@ -103,11 +103,19 @@ function onTap() {
   if (state === S.DEAD || state >= S.ENDING) return;
   if (R.onGround) { R.vy = JV(); R.onGround = false; playSound(sfxJump); }
 }
+function onRelease() {
+  if (state === S.PLAYING && !R.onGround && R.vy < 0) R.vy *= 0.4;
+}
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); onTap(); }
 });
+document.addEventListener('keyup', e => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') onRelease();
+});
 document.addEventListener('touchstart', e => { e.preventDefault(); onTap(); }, { passive:false });
+document.addEventListener('touchend',   e => { e.preventDefault(); onRelease(); }, { passive:false });
 document.addEventListener('mousedown', () => onTap());
+document.addEventListener('mouseup',   () => onRelease());
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 audio.addEventListener('loadedmetadata', () => { songDuration = audio.duration || songDuration; goReady(); });
@@ -174,7 +182,7 @@ function updatePlaying() {
     if (o.type === 'ars' && o.x < R.x) {
       o.sfxDone = true;
       if (Math.random() < 2/3) playSound(sfxArsim[Math.floor(Math.random() * sfxArsim.length)]);
-    } else if (o.type === 'rocket' && Math.abs(o.x - R.x) < 50) {
+    } else if (o.type === 'rocket' && o.x < R.x) {
       o.sfxDone = true;
       if (Math.random() < 2/3) playSound(sfxMissiles[Math.floor(Math.random() * sfxMissiles.length)]);
     }
