@@ -42,6 +42,17 @@ const pf     = document.getElementById('pf');
 const audio  = document.getElementById('audio');
 audio.src = SONG;
 
+// ── Sound effects ─────────────────────────────────────────────────────────────
+function playSound(snd) { const s = snd.cloneNode(); s.play().catch(() => {}); }
+const sfxJump     = new Audio('sounds/jump.mp3');
+const sfxDeaths   = [new Audio('sounds/death.mp3'), new Audio('sounds/death2.mp3')];
+const sfxArsim    = [1,2,3,4,5].map(n => new Audio(`sounds/arsim/ars${n}.mp3`));
+const sfxMissiles = [
+  new Audio('sounds/missiles/missile1.mp3'),
+  new Audio('sounds/missiles/missile2.mp3'),
+  new Audio('sounds/missiles/missile%203.mp3')
+];
+
 let songDuration = 139.781;
 const S = { LOADING:0, READY:1, PLAYING:2, DEAD:3, ENDING:4, CELEBRATION:5 };
 let state = S.LOADING, fc = 0;
@@ -89,7 +100,7 @@ function randSpawn() { return 80 + Math.random() * 80; }
 function onTap() {
   if (state === S.READY) { startGame(); return; }
   if (state === S.DEAD || state >= S.ENDING) return;
-  if (R.onGround) { R.vy = JV(); R.onGround = false; }
+  if (R.onGround) { R.vy = JV(); R.onGround = false; playSound(sfxJump); }
 }
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); onTap(); }
@@ -156,6 +167,18 @@ function updatePlaying() {
   spawnTimer++;
   if (spawnTimer >= nextSpawn) { spawnTimer = 0; nextSpawn = randSpawn(); spawnObstacle(); }
   obstacles = obstacles.filter(o => { o.x -= speed; return o.x > -150; });
+
+  for (const o of obstacles) {
+    if (o.sfxDone) continue;
+    if (o.type === 'ars' && o.x < R.x) {
+      o.sfxDone = true;
+      if (Math.random() < 2/3) playSound(sfxArsim[Math.floor(Math.random() * sfxArsim.length)]);
+    } else if (o.type === 'rocket' && Math.abs(o.x - R.x) < 50) {
+      o.sfxDone = true;
+      if (Math.random() < 2/3) playSound(sfxMissiles[Math.floor(Math.random() * sfxMissiles.length)]);
+    }
+  }
+
   if (collides()) killRunner();
   if (!isNaN(audio.duration)) pf.style.width = (audio.currentTime / audio.duration * 100) + '%';
 }
@@ -192,6 +215,7 @@ function collides() {
 
 function killRunner() {
   state = S.DEAD; deadTick = 0; audio.pause();
+  playSound(sfxDeaths[Math.floor(Math.random() * sfxDeaths.length)]);
   R.angle = Math.PI;   // flip upside-down immediately
   R.deadVY = -10;      // small upward kick
   R.onGround = false;
