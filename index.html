@@ -147,12 +147,10 @@ function startGame() {
 
 // ── UPDATE ────────────────────────────────────────────────────────────────────
 let explosion = null;
-let knife = null;
 
 function update(dt) {
   fc += dt;
   if (explosion) { explosion.tick += dt; if (explosion.tick >= 45) explosion = null; }
-  if (knife)     { knife.tick     += dt; if (knife.tick     >= 50) knife     = null; }
   if      (state === S.PLAYING)     updatePlaying(dt);
   else if (state === S.ENDING)      updateEnding(dt);
   else if (state === S.DEAD)        updateDead(dt);
@@ -220,16 +218,15 @@ function aabb(a, bx, by, bw, bh) {
   return a.x < bx+bw && a.x+a.w > bx && a.y < by+bh && a.y+a.h > by;
 }
 
-let lastHitObs = null;
 function collides() {
   const rb = runnerBox();
   for (const o of obstacles) {
     if (o.type === 'ars') {
       const gw = o.count * 34 + (o.count - 1) * 6;
       const gh = o.tall ? 80 : 62;
-      if (aabb(rb, o.x - gw/2 + 5, o.y - gh + 6, gw - 10, gh - 6)) { lastHitObs = o; return 'ars'; }
+      if (aabb(rb, o.x - gw/2 + 5, o.y - gh + 6, gw - 10, gh - 6)) return 'ars';
     } else {
-      if (aabb(rb, o.x - 22, o.y - 9, 44, 18)) { lastHitObs = o; return 'rocket'; }
+      if (aabb(rb, o.x - 22, o.y - 9, 44, 18)) return 'rocket';
     }
   }
   return null;
@@ -250,11 +247,7 @@ const ROCKET_DEATH_TEXTS = [
 function killRunner(killedBy) {
   state = S.DEAD; deadTick = 0; audio.pause(); lastKiller = killedBy;
   playSound(sfxDeaths[Math.floor(Math.random() * sfxDeaths.length)]);
-  if (killedBy === 'rocket') explosion = { x: R.x,      y: R.y - 48, tick: 0 };
-  if (killedBy === 'ars' && lastHitObs) {
-    const sc = lastHitObs.tall ? 1 : 0.78;
-    knife = { fromX: lastHitObs.x, toX: R.x, y: lastHitObs.y - 44 * sc, scale: sc, tick: 0 };
-  }
+  if (killedBy === 'rocket') explosion = { x: R.x, y: R.y - 48, tick: 0 };
   R.angle = Math.PI;
   R.deadVY = -10;
   R.onGround = false;
@@ -359,7 +352,6 @@ function render() {
     }
   }
   if (explosion) drawExplosion();
-  if (knife)     drawKnife();
 }
 
 // ── Sky ───────────────────────────────────────────────────────────────────────
@@ -575,40 +567,6 @@ function drawExplosion() {
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillStyle = '#333'; ctx.fillText('BOOM!', 2, 2);
   ctx.fillStyle = '#fff'; ctx.fillText('BOOM!', 0, 0);
-  ctx.restore();
-}
-
-// ── Knife attack ──────────────────────────────────────────────────────────────
-function drawKnife() {
-  const sc    = knife.scale;
-  const slide = Math.min(1, knife.tick / 10);
-  const alpha = knife.tick > 35 ? 1 - (knife.tick - 35) / 15 : 1;
-  const curX  = knife.fromX + (knife.toX - knife.fromX) * slide;
-
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(curX, knife.y);
-
-  // Blade (tip at x=0, pointing left)
-  ctx.fillStyle = '#cccccc';
-  ctx.beginPath();
-  ctx.moveTo(0, 0); ctx.lineTo(58*sc, -8*sc); ctx.lineTo(58*sc, 8*sc); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.beginPath();
-  ctx.moveTo(4*sc, -1*sc); ctx.lineTo(58*sc, -6*sc); ctx.lineTo(58*sc, -2*sc); ctx.closePath(); ctx.fill();
-  // Blood drip
-  ctx.fillStyle = '#cc0000';
-  ctx.beginPath(); ctx.arc(6*sc, 5*sc, 4*sc, 0, Math.PI*2); ctx.fill();
-  ctx.fillRect(4*sc, 5*sc, 5*sc, 10*sc);
-  // Guard
-  ctx.fillStyle = '#a08020';
-  ctx.fillRect(58*sc, -13*sc, 8*sc, 26*sc);
-  // Handle
-  for (let i = 0; i < 4; i++) {
-    ctx.fillStyle = i % 2 === 0 ? '#7a2800' : '#4a1800';
-    ctx.fillRect((66 + i*8)*sc, -9*sc, 8*sc, 18*sc);
-  }
-
   ctx.restore();
 }
 
