@@ -6,7 +6,7 @@
   <title>האוס 30</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { overflow: hidden; background: #C2C7B5; touch-action: none; user-select: none; }
+    body { overflow: hidden; background: #BCC1D1; touch-action: none; user-select: none; }
     canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
     #overlay {
       position: fixed; inset: 0;
@@ -363,11 +363,11 @@ function render() {
 
 // ── Sky ───────────────────────────────────────────────────────────────────────
 function drawSky() {
-  ctx.fillStyle = isNight ? '#4A4F45' : '#C2C7B5';
+  ctx.fillStyle = isNight ? '#454A5A' : '#BCC1D1';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (isNight) {
     // Pixel stars in lightest palette color
-    ctx.fillStyle = '#C2C7B5';
+    ctx.fillStyle = '#BCC1D1';
     for (let i = 0; i < 70; i++) {
       const sx = (i * 6271 + 42 * 1009) % canvas.width;
       const sy = (i * 3847 + 42 * 719) % (GND() * 0.88);
@@ -386,10 +386,10 @@ function drawMoon() {
   ctx.save();
   ctx.globalAlpha = moonAlpha;
   // Full disc
-  ctx.fillStyle = '#C2C7B5';
+  ctx.fillStyle = '#BCC1D1';
   ctx.beginPath(); ctx.arc(mx, my, r, 0, Math.PI * 2); ctx.fill();
   // Crescent shadow (night sky color overlay)
-  ctx.fillStyle = '#4A4F45';
+  ctx.fillStyle = '#454A5A';
   ctx.beginPath(); ctx.arc(mx + r * 0.42, my - r * 0.04, r * 0.84, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
@@ -405,7 +405,7 @@ const CL = [
 function drawClouds() {
   if (isNight) return;
   cloudOff = (cloudOff + .22) % canvas.width;
-  ctx.fillStyle = '#8B9180';
+  ctx.fillStyle = '#7B8299';
   for (const c of CL) {
     const cx = Math.round((c.fx * canvas.width - cloudOff * .38 + canvas.width * 2) % canvas.width);
     const cy = Math.round(c.fy * canvas.height);
@@ -423,19 +423,19 @@ function drawGround() {
   const gy = GND();
 
   // Fill
-  ctx.fillStyle = isNight ? '#1E211A' : '#4A4F45';
+  ctx.fillStyle = isNight ? '#1A1D26' : '#454A5A';
   ctx.fillRect(0, gy, canvas.width, canvas.height - gy);
 
   // Main ground line
-  ctx.fillStyle = '#8B9180';
+  ctx.fillStyle = '#7B8299';
   ctx.fillRect(0, gy, canvas.width, 2);
 
   // Second line (T-Rex style)
-  ctx.fillStyle = '#4A4F45';
+  ctx.fillStyle = '#454A5A';
   ctx.fillRect(0, gy + 8, canvas.width, 2);
 
   // Tiled bumps / imperfections
-  ctx.fillStyle = '#8B9180';
+  ctx.fillStyle = '#7B8299';
   const offset = totalScroll % BUMP_TILE;
   const tilesNeeded = Math.ceil(canvas.width / BUMP_TILE) + 2;
   for (const b of gndBumps) {
