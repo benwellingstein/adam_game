@@ -518,8 +518,8 @@ function drawRocketObs(x, y, scale) {
 // ── House + palm tree (unchanged) ─────────────────────────────────────────────
 function drawHouse(cx, gy) {
   if (!houseImg.complete || !houseImg.naturalWidth) return;
-  const drawW = 220;
-  const drawH = drawW * houseImg.naturalHeight / houseImg.naturalWidth;
+  const drawH = canvas.height;
+  const drawW = drawH * houseImg.naturalWidth / houseImg.naturalHeight;
   ctx.save();
   ctx.translate(cx, gy);
   ctx.fillStyle = 'rgba(0,0,0,.12)';
