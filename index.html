@@ -43,11 +43,12 @@
 <div id="overlay" class="hidden">
   <div id="faces">
     <img src="Images/Face.png" alt="">
-    <img src="Images/Face.png" alt="">
+    <img src="Images/Face 2.png" alt="">
   </div>
   <h1 id="ov-t">אוס 30</h1>
   <p  id="ov-s">שנייה טוען...</p>
-  <div id="socials">
+</div>
+<div id="socials" class="hidden">
     <div class="social-row">
       <span class="social-label">אדם בלאגן</span>
       <div class="social-icons">
@@ -74,7 +75,6 @@
       </div>
     </div>
   </div>
-</div>
 <audio id="audio" preload="auto"></audio>
 <script>
 const SONG = 'SVERDY%20ADAM%20BALAGAN%20HOUSE%2030%20%5BNew%20Mix%5D%20-%20%5BPRECISE%20MASTER%5D%2044.1Khz%20320Kbps.mp3';
@@ -197,11 +197,12 @@ function goReady() {
   ovT.innerHTML = 'האוס 30<br>מסעו של סברדי';
   ovS.textContent = 'תעזרו לסברדי להגיע לאולפן של אדם בלאגן כדי שהם יוכלו לבשל באנגרים\nרק תזהרו שלא להדקר בדרך וגם שלא יתפסו אתכם האירנים המנייק\nבהצלחה…';
   ovEl.classList.remove('hidden');
+  socials.classList.remove('hidden');
   initRunner();
 }
 
 function startGame() {
-  state = S.PLAYING; ovEl.classList.add('hidden'); pb.classList.remove('hidden');
+  state = S.PLAYING; ovEl.classList.add('hidden'); socials.classList.add('hidden'); pb.classList.remove('hidden');
   obstacles = []; spawnTimer = 0; nextSpawn = randSpawn();
   speed = 5; gndScroll = 0; houseActive = false; houseX = 0;
   confetti = []; fireworks = []; celebTick = 0;
