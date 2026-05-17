@@ -18,6 +18,11 @@
     #overlay h1 { font-size: clamp(1.8rem,6vw,4rem); margin-bottom:.8rem; line-height:1.2; }
     #overlay p  { font-size: clamp(1rem,3vw,1.5rem); opacity:.88; margin-top:.4rem; }
     #overlay.hidden { display: none; }
+    @keyframes bob { 0%,100% { transform: translateY(0) rotate(var(--tilt)); } 50% { transform: translateY(-14px) rotate(var(--tilt)); } }
+    #faces { display: flex; justify-content: center; gap: 40px; margin-bottom: 18px; }
+    #faces img { width: clamp(80px,14vw,140px); animation: bob 1.8s ease-in-out infinite; }
+    #faces img:first-child { --tilt: -12deg; }
+    #faces img:last-child  { --tilt:  12deg; animation-delay: 0.2s; }
     #socials { display: flex; gap: 14px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
     #socials a { color: white; text-decoration: none; opacity: 0.85; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; transition: opacity 0.2s, transform 0.2s; }
     #socials a:hover { opacity: 1; transform: scale(1.15); }
@@ -31,6 +36,10 @@
 <canvas id="game"></canvas>
 <div id="pb" class="hidden"><div id="pf"></div></div>
 <div id="overlay">
+  <div id="faces">
+    <img src="Images/Face.png" alt="">
+    <img src="Images/Face.png" alt="">
+  </div>
   <h1 id="ov-t">אוס 30</h1>
   <p  id="ov-s">שנייה טוען...</p>
   <div id="socials">
