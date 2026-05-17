@@ -18,6 +18,9 @@
     #overlay h1 { font-size: clamp(1.8rem,6vw,4rem); margin-bottom:.8rem; line-height:1.2; }
     #overlay p  { font-size: clamp(1rem,3vw,1.5rem); opacity:.88; margin-top:.4rem; }
     #overlay.hidden { display: none; }
+    #socials { display: flex; gap: 18px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
+    #socials a { color: white; text-decoration: none; opacity: 0.85; font-size: clamp(0.8rem,2.5vw,1.1rem); display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 6px 14px; transition: opacity 0.2s; }
+    #socials a:hover { opacity: 1; background: rgba(255,255,255,0.1); }
     #pb { position:fixed; bottom:0; left:0; right:0; height:6px; background:rgba(0,0,0,.2); }
     #pf { height:100%; width:0%; background:linear-gradient(90deg,#44aaff,#ff44aa); }
     #pb.hidden { display:none; }
@@ -29,6 +32,12 @@
 <div id="overlay">
   <h1 id="ov-t">אוס 30</h1>
   <p  id="ov-s">שנייה טוען...</p>
+  <div id="socials">
+    <a href="https://www.instagram.com/adam_balagan/" target="_blank">📸 Instagram</a>
+    <a href="https://www.youtube.com/@adam_balagan" target="_blank">▶ YouTube</a>
+    <a href="https://open.spotify.com/artist/7sO7T2QPNES6ejLHST3Lqq?si=luLxhl20Qj-pyxLdGTCmZg" target="_blank">🎵 Spotify</a>
+    <a href="https://music.apple.com/ca/artist/adam-balagan/1559426098" target="_blank">🍎 Apple Music</a>
+  </div>
 </div>
 <audio id="audio" preload="auto"></audio>
 <script>
