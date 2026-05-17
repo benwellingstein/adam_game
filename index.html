@@ -53,6 +53,8 @@ const houseImg   = new Image(); houseImg.src   = 'Images/house.png';
 function playSound(snd) { snd.currentTime = 0; snd.play().catch(() => {}); }
 const sfxJump     = new Audio('sounds/jump.mp3');
 const sfxDeaths   = [new Audio('sounds/death.mp3'), new Audio('sounds/death2.mp3')];
+const sfxDeathBooms = [new Audio('sounds/DEATHBOOM1.mp3.mp3'), new Audio('sounds/DEATHBOOM2.mp3.mp3')];
+const sfxDeathStab  = new Audio('sounds/DEATHSTAB.mp3.mp3');
 const sfxArsim    = [1,2,3,4,5].map(n => new Audio(`sounds/arsim/ars${n}.mp3`));
 const sfxMissiles = [
   new Audio('sounds/missiles/missile1.mp3'),
@@ -190,10 +192,10 @@ function updatePlaying(dt) {
     if (o.sfxDone) continue;
     if (o.type === 'ars' && o.x < R.x) {
       o.sfxDone = true;
-      if (Math.random() < 2/3) playSound(sfxArsim[Math.floor(Math.random() * sfxArsim.length)]);
+      playSound(sfxArsim[Math.floor(Math.random() * sfxArsim.length)]);
     } else if (o.type === 'rocket' && o.x < R.x) {
       o.sfxDone = true;
-      if (Math.random() < 2/3) playSound(sfxMissiles[Math.floor(Math.random() * sfxMissiles.length)]);
+      playSound(sfxMissiles[Math.floor(Math.random() * sfxMissiles.length)]);
     }
   }
 
@@ -246,7 +248,8 @@ const ROCKET_DEATH_TEXTS = [
 
 function killRunner(killedBy) {
   state = S.DEAD; deadTick = 0; audio.pause(); lastKiller = killedBy;
-  playSound(sfxDeaths[Math.floor(Math.random() * sfxDeaths.length)]);
+  if (killedBy === 'rocket') playSound(sfxDeathBooms[Math.floor(Math.random() * sfxDeathBooms.length)]);
+  else playSound(sfxDeathStab);
   if (killedBy === 'rocket') explosion = { x: R.x, y: R.y - 48, tick: 0 };
   R.angle = Math.PI;
   R.deadVY = -10;
