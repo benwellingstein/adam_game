@@ -20,7 +20,7 @@
     #overlay.hidden { display: none; }
     @keyframes bob { 0%,100% { transform: translateY(0) rotate(var(--tilt)); } 50% { transform: translateY(-14px) rotate(var(--tilt)); } }
     #faces { display: flex; justify-content: center; gap: 40px; margin-bottom: 18px; }
-    #faces img { width: clamp(80px,14vw,140px); animation: bob 1.8s ease-in-out infinite; }
+    #faces img { width: clamp(240px,42vw,420px); animation: bob 1.8s ease-in-out infinite; }
     #faces img:first-child { --tilt: -12deg; }
     #faces img:last-child  { --tilt:  12deg; animation-delay: 0.2s; }
     #socials { display: flex; gap: 14px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
@@ -167,10 +167,11 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') onRelease();
 });
-document.addEventListener('touchstart', e => { e.preventDefault(); onTap(); }, { passive:false });
-document.addEventListener('touchend',   e => { e.preventDefault(); onRelease(); }, { passive:false });
-document.addEventListener('mousedown', () => onTap());
-document.addEventListener('mouseup',   () => onRelease());
+const socials = document.getElementById('socials');
+document.addEventListener('touchstart', e => { if (socials.contains(e.target)) return; e.preventDefault(); onTap(); }, { passive:false });
+document.addEventListener('touchend',   e => { if (socials.contains(e.target)) return; e.preventDefault(); onRelease(); }, { passive:false });
+document.addEventListener('mousedown', e => { if (socials.contains(e.target)) return; onTap(); });
+document.addEventListener('mouseup',   e => { if (socials.contains(e.target)) return; onRelease(); });
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 audio.addEventListener('loadedmetadata', () => { songDuration = audio.duration || songDuration; goReady(); });
