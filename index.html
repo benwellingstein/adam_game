@@ -81,7 +81,7 @@ const JV   = () => -Math.sqrt(2 * GRAV * canvas.height * 0.34);
 function initRunner() {
   R.x = Math.max(120, canvas.width * 0.13);
   R.y = GND(); R.vy = 0; R.onGround = true; R.entering = false; R.alpha = 1;
-  R.angle = 0; R.deadVY = 0;
+  R.angle = 0; R.deadVY = 0; R.frozenFrame = null;
 }
 
 // ── Game vars ─────────────────────────────────────────────────────────────────
