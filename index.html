@@ -304,7 +304,7 @@ function updateEnding(dt) {
   advanceMoon(speed * dt, dt);
   physicsStep(dt);
   if (!R.entering) houseX -= canvas.width / 80 * dt;
-  if (!R.entering && houseX <= R.x + 55) R.entering = true;
+  if (!R.entering && houseX <= canvas.width / 2) R.entering = true;
   if (R.entering) {
     R.alpha -= 0.04 * dt; R.x += 2.5 * dt;
     if (R.alpha <= 0) beginCelebration();
@@ -518,7 +518,7 @@ function drawRocketObs(x, y, scale) {
 // ── House + palm tree (unchanged) ─────────────────────────────────────────────
 function drawHouse(cx, gy) {
   if (!houseImg.complete || !houseImg.naturalWidth) return;
-  const drawH = canvas.height;
+  const drawH = canvas.height * 0.5;
   const drawW = drawH * houseImg.naturalWidth / houseImg.naturalHeight;
   ctx.save();
   ctx.translate(cx, gy);
