@@ -462,7 +462,7 @@ function drawMoon() {
   if (moonAlpha <= 0) return;
   const r = Math.max(20, Math.min(canvas.width, canvas.height) * 0.046);
   // Slow parallax: moon drifts at ~8% of scroll speed
-  const mx = ((canvas.width * 0.78 - moonOff * 0.08) % canvas.width + canvas.width) % canvas.width;
+  const mx = Math.max(r * 2, canvas.width * 0.78 - moonOff * 0.08);
   const my = canvas.height * 0.17;
   ctx.save();
   ctx.globalAlpha = moonAlpha;
@@ -476,26 +476,26 @@ function drawMoon() {
 }
 
 // ── Clouds (pixel-art style, hidden at night) ─────────────────────────────────
-let cloudOff = 0;
 const CL = [
-  {fx:.12, fy:.07, w:90,  h:30},
-  {fx:.40, fy:.10, w:110, h:36},
-  {fx:.68, fy:.06, w:80,  h:26},
-  {fx:.88, fy:.12, w:96,  h:32}
+  {fx:.12, fy:.07, w:90,  h:30, x:null},
+  {fx:.40, fy:.10, w:110, h:36, x:null},
+  {fx:.68, fy:.06, w:80,  h:26, x:null},
+  {fx:.88, fy:.12, w:96,  h:32, x:null}
 ];
 function drawClouds() {
   if (isNight) return;
-  cloudOff = (cloudOff + .22) % canvas.width;
   ctx.fillStyle = '#7B8299';
   for (const c of CL) {
-    const cx = Math.round((c.fx * canvas.width - cloudOff * .38 + canvas.width * 2) % canvas.width);
+    if (c.x === null) c.x = c.fx * canvas.width;
+    c.x -= 0.084;
+    if (c.x + c.w < 0) c.x = canvas.width;
+    const cx = Math.round(c.x);
     const cy = Math.round(c.fy * canvas.height);
     const w = c.w, h = c.h;
-    // Stacked rects = pixel art cloud shape
-    ctx.fillRect(cx,         cy + h*0.45|0, w,        h*0.55|0);
-    ctx.fillRect(cx + w*.1|0, cy + h*.18|0, w*0.75|0, h*0.55|0);
-    ctx.fillRect(cx + w*.28|0, cy,          w*0.55|0, h*0.52|0);
-    ctx.fillRect(cx - w*.04|0, cy + h*.22|0, w*0.42|0, h*0.48|0);
+    ctx.fillRect(cx,           cy + h*0.45|0, w,        h*0.55|0);
+    ctx.fillRect(cx + w*.1|0,  cy + h*.18|0,  w*0.75|0, h*0.55|0);
+    ctx.fillRect(cx + w*.28|0, cy,             w*0.55|0, h*0.52|0);
+    ctx.fillRect(cx - w*.04|0, cy + h*.22|0,  w*0.42|0, h*0.48|0);
   }
 }
 
