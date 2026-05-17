@@ -51,17 +51,27 @@ const runFrames  = [1,2,3,4].map(n => { const img = new Image(); img.src = `Imag
 const houseImg   = new Image(); houseImg.src   = 'Images/house.png';
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
-function playSound(snd) { snd.currentTime = 0; snd.play().catch(() => {}); }
-const sfxJump     = new Audio('sounds/jump.mp3');
-const sfxDeaths   = [new Audio('sounds/death.mp3'), new Audio('sounds/death2.mp3')];
-const sfxDeathBooms = [new Audio('sounds/DEATHBOOM1.mp3.mp3'), new Audio('sounds/DEATHBOOM2.mp3.mp3')];
-const sfxDeathStabs = [new Audio('sounds/DEATHSTAB.mp3.mp3'), new Audio('sounds/DEATHSTAB2.mp3.mp3'), new Audio('sounds/DEATHSTAB3.mp3.mp3')];
-const sfxArsim    = [1,2,3,4,5].map(n => new Audio(`sounds/arsim/ars${n}.mp3`));
-const sfxMissiles = [
+const sfxCtx  = new (window.AudioContext || window.webkitAudioContext)();
+const sfxGain = sfxCtx.createGain();
+sfxGain.gain.value = 2.5;
+sfxGain.connect(sfxCtx.destination);
+
+function connectSfx(snd) { sfxCtx.createMediaElementSource(snd).connect(sfxGain); return snd; }
+function playSound(snd) {
+  if (sfxCtx.state === 'suspended') sfxCtx.resume();
+  snd.currentTime = 0; snd.play().catch(() => {});
+}
+
+const sfxJump       = connectSfx(new Audio('sounds/jump.mp3'));
+const sfxDeaths     = [new Audio('sounds/death.mp3'), new Audio('sounds/death2.mp3')].map(connectSfx);
+const sfxDeathBooms = [new Audio('sounds/DEATHBOOM1.mp3.mp3'), new Audio('sounds/DEATHBOOM2.mp3.mp3')].map(connectSfx);
+const sfxDeathStabs = [new Audio('sounds/DEATHSTAB.mp3.mp3'), new Audio('sounds/DEATHSTAB2.mp3.mp3'), new Audio('sounds/DEATHSTAB3.mp3.mp3')].map(connectSfx);
+const sfxArsim      = [1,2,3,4,5].map(n => connectSfx(new Audio(`sounds/arsim/ars${n}.mp3`)));
+const sfxMissiles   = [
   new Audio('sounds/missiles/missile1.mp3'),
   new Audio('sounds/missiles/missile2.mp3'),
   new Audio('sounds/missiles/missile%203.mp3')
-];
+].map(connectSfx);
 
 let songDuration = 139.781;
 const S = { LOADING:0, READY:1, PLAYING:2, DEAD:3, ENDING:4, CELEBRATION:5 };
