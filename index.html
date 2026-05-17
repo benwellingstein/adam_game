@@ -25,10 +25,11 @@
     #faces img { width: clamp(160px,44vw,400px); max-width: calc(50vw - 30px); max-height: 44vh; object-fit: contain; animation: bob 1.8s ease-in-out infinite; }
     #faces img:first-child { --tilt: -12deg; }
     #faces img:last-child  { --tilt:  12deg; animation-delay: 0.2s; }
-    #socials { position:fixed; bottom:0; left:0; right:0; display:flex; flex-direction:column; gap:6px; padding:8px 0 12px; align-items:center; background:rgba(0,10,40,0.88); z-index:10; }
+    #socials { display:flex; flex-direction:column; gap:6px; padding:8px 0 4px; align-items:center; margin-top:14px; width:100%; }
     #socials.hidden { display:none; }
+    #socials.fixed { position:fixed; bottom:0; left:0; right:0; background:rgba(0,10,40,0.88); padding:8px 0 12px; margin-top:0; z-index:10; }
     .social-row { display:flex; align-items:center; gap:8px; direction:rtl; }
-    .social-label { font-family:'Courier New',monospace; font-size:clamp(0.65rem,1.8vw,0.9rem); color:rgba(255,255,255,0.75); white-space:nowrap; }
+    .social-label { font-family:'Courier New',monospace; font-size:clamp(0.65rem,1.8vw,0.9rem); color:rgba(255,255,255,0.75); white-space:nowrap; min-width:6em; text-align:right; }
     #socials a { display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; opacity:0.88; transition:opacity 0.2s,transform 0.2s; }
     #socials a:hover { opacity:1; transform:scale(1.15); }
     #socials svg { width:24px; height:24px; fill:white; }
@@ -47,8 +48,7 @@
   </div>
   <h1 id="ov-t">אוס 30</h1>
   <p  id="ov-s">שנייה טוען...</p>
-</div>
-<div id="socials" class="hidden">
+  <div id="socials" class="hidden">
   <div class="social-row">
     <span class="social-label">אדם בלאגן</span>
     <a href="https://www.instagram.com/adam_balagan/" target="_blank" style="background:#d6249f">
@@ -78,6 +78,7 @@
     <a href="https://music.apple.com/il/artist/%D7%A1%D7%91%D7%A8%D7%93%D7%99/1596326189" target="_blank" style="background:#FC3C44">
       <svg viewBox="0 0 24 24"><path d="M23.994 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.877-.726 10.496 10.496 0 0 0-1.564-.15c-.04-.003-.083-.01-.124-.013H7.991c-.04.003-.083.01-.124.013a10.496 10.496 0 0 0-1.564.15 5.022 5.022 0 0 0-1.877.726C3.308 1.624 2.563 2.624 2.246 3.934a9.23 9.23 0 0 0-.24 2.19c-.01.108-.013.218-.016.327V17.55c.003.11.006.22.016.327a9.23 9.23 0 0 0 .24 2.19c.317 1.31 1.062 2.31 2.18 3.043a5.022 5.022 0 0 0 1.877.726 10.496 10.496 0 0 0 1.564.15c.04.003.083.01.124.013h8.01c.04-.003.083-.01.124-.013a10.496 10.496 0 0 0 1.564-.15 5.022 5.022 0 0 0 1.877-.726c1.118-.733 1.863-1.733 2.18-3.043a9.23 9.23 0 0 0 .24-2.19c.01-.108.013-.218.016-.327V6.45c-.003-.11-.006-.22-.016-.327zm-6.427 3.93v5.304c0 .29-.014.576-.067.861a2.99 2.99 0 0 1-.854 1.658 3.09 3.09 0 0 1-1.634.832c-.278.053-.558.068-.84.068-.63 0-1.258-.157-1.79-.487a2.993 2.993 0 0 1-1.393-2.61c0-.956.434-1.825 1.188-2.394a3.04 3.04 0 0 1 1.83-.588c.273 0 .547.035.813.1V8.15c0-.04.015-.077.042-.104a.147.147 0 0 1 .104-.042h2.45c.04 0 .077.015.104.042.027.027.042.064.042.104v1.903z"/></svg>
     </a>
+  </div>
   </div>
 </div>
 <audio id="audio" preload="auto"></audio>
@@ -208,7 +209,7 @@ function goReady() {
 }
 
 function startGame() {
-  state = S.PLAYING; ovEl.classList.add('hidden'); socials.classList.add('hidden'); pb.classList.remove('hidden');
+  state = S.PLAYING; ovEl.classList.add('hidden'); socials.classList.add('hidden'); socials.classList.remove('fixed'); pb.classList.remove('hidden');
   obstacles = []; spawnTimer = 0; nextSpawn = randSpawn();
   speed = 5; gndScroll = 0; houseActive = false; houseX = 0;
   confetti = []; fireworks = []; celebTick = 0;
@@ -369,6 +370,8 @@ function updateEnding(dt) {
 
 function beginCelebration() {
   state = S.CELEBRATION; celebTick = 0; confetti = []; fireworks = [];
+  socials.classList.remove('hidden');
+  socials.classList.add('fixed');
   spawnConfetti(120); spawnFirework();
 }
 
