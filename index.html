@@ -6,7 +6,7 @@
   <title>האוס 30</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { overflow: hidden; background: #111; touch-action: none; user-select: none; }
+    body { overflow: hidden; background: #C2C7B5; touch-action: none; user-select: none; }
     canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
     #overlay {
       position: fixed; inset: 0;
@@ -207,7 +207,8 @@ function updatePlaying(dt) {
 function spawnObstacle() {
   if (Math.random() < 0.28) {
     const altPx = [GND() * 0.42, GND() * 0.60, GND() * 0.78][Math.floor(Math.random() * 3)];
-    obstacles.push({ type:'rocket', x: canvas.width + 80, y: altPx });
+    const scale = 0.6 + Math.random() * 0.9;
+    obstacles.push({ type:'rocket', x: canvas.width + 80, y: altPx, scale });
   } else {
     const count = Math.random() < 0.5 ? 1 : Math.random() < 0.6 ? 2 : 3;
     const tall  = Math.random() < 0.5;
@@ -229,7 +230,8 @@ function collides() {
       const gh = o.tall ? 80 : 62;
       if (aabb(rb, o.x - gw/2 + 5, o.y - gh + 6, gw - 10, gh - 6)) return 'ars';
     } else {
-      if (aabb(rb, o.x - 22, o.y - 9, 44, 18)) return 'rocket';
+      const sc = o.scale || 1;
+      if (aabb(rb, o.x - 22*sc, o.y - 9*sc, 44*sc, 18*sc)) return 'rocket';
     }
   }
   return null;
@@ -344,7 +346,7 @@ function render() {
 
   for (const o of obstacles) {
     if (o.type === 'ars') drawArs(o.x, o.y, o.count, o.tall, o.imgIdxs);
-    else                  drawRocketObs(o.x, o.y);
+    else                  drawRocketObs(o.x, o.y, o.scale || 1);
   }
   if (houseActive) drawHouse(houseX, GND());
 
@@ -361,21 +363,16 @@ function render() {
 
 // ── Sky ───────────────────────────────────────────────────────────────────────
 function drawSky() {
+  ctx.fillStyle = isNight ? '#4A4F45' : '#C2C7B5';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (isNight) {
-    const g = ctx.createLinearGradient(0, 0, 0, GND());
-    g.addColorStop(0, '#07071a'); g.addColorStop(0.5, '#0f0f2e'); g.addColorStop(1, '#1a1a40');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // Pixel stars (deterministic positions)
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    // Pixel stars in lightest palette color
+    ctx.fillStyle = '#C2C7B5';
     for (let i = 0; i < 70; i++) {
       const sx = (i * 6271 + 42 * 1009) % canvas.width;
       const sy = (i * 3847 + 42 * 719) % (GND() * 0.88);
       ctx.fillRect(Math.round(sx), Math.round(sy), i % 4 === 0 ? 2 : 1, i % 4 === 0 ? 2 : 1);
     }
-  } else {
-    const g = ctx.createLinearGradient(0, 0, 0, GND());
-    g.addColorStop(0,'#4fc3f7'); g.addColorStop(.6,'#87CEEB'); g.addColorStop(1,'#c9eeff');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 }
 
@@ -389,10 +386,10 @@ function drawMoon() {
   ctx.save();
   ctx.globalAlpha = moonAlpha;
   // Full disc
-  ctx.fillStyle = '#faf0b0';
+  ctx.fillStyle = '#C2C7B5';
   ctx.beginPath(); ctx.arc(mx, my, r, 0, Math.PI * 2); ctx.fill();
   // Crescent shadow (night sky color overlay)
-  ctx.fillStyle = '#0f0f2e';
+  ctx.fillStyle = '#4A4F45';
   ctx.beginPath(); ctx.arc(mx + r * 0.42, my - r * 0.04, r * 0.84, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
@@ -408,7 +405,7 @@ const CL = [
 function drawClouds() {
   if (isNight) return;
   cloudOff = (cloudOff + .22) % canvas.width;
-  ctx.fillStyle = 'rgba(255,255,255,.90)';
+  ctx.fillStyle = '#8B9180';
   for (const c of CL) {
     const cx = Math.round((c.fx * canvas.width - cloudOff * .38 + canvas.width * 2) % canvas.width);
     const cy = Math.round(c.fy * canvas.height);
@@ -426,25 +423,19 @@ function drawGround() {
   const gy = GND();
 
   // Fill
-  if (isNight) {
-    ctx.fillStyle = '#26263a';
-  } else {
-    const g = ctx.createLinearGradient(0, gy, 0, canvas.height);
-    g.addColorStop(0,'#7dcf52'); g.addColorStop(.12,'#5aaa38'); g.addColorStop(1,'#3a7020');
-    ctx.fillStyle = g;
-  }
+  ctx.fillStyle = isNight ? '#1E211A' : '#4A4F45';
   ctx.fillRect(0, gy, canvas.width, canvas.height - gy);
 
   // Main ground line
-  ctx.fillStyle = isNight ? '#9090a8' : '#4a8a30';
+  ctx.fillStyle = '#8B9180';
   ctx.fillRect(0, gy, canvas.width, 2);
 
   // Second line (T-Rex style)
-  ctx.fillStyle = isNight ? '#585870' : '#3a7020';
+  ctx.fillStyle = '#4A4F45';
   ctx.fillRect(0, gy + 8, canvas.width, 2);
 
   // Tiled bumps / imperfections
-  ctx.fillStyle = isNight ? '#6a6a80' : '#5aa028';
+  ctx.fillStyle = '#8B9180';
   const offset = totalScroll % BUMP_TILE;
   const tilesNeeded = Math.ceil(canvas.width / BUMP_TILE) + 2;
   for (const b of gndBumps) {
@@ -491,9 +482,9 @@ function drawOneArs(x, y, tall, flip, img) {
 }
 
 // ── Rocket obstacle (pixel art) ───────────────────────────────────────────────
-function drawRocketObs(x, y) {
+function drawRocketObs(x, y, scale) {
   if (!missileImg.complete || !missileImg.naturalWidth) return;
-  const drawW = 120, drawH = 36;
+  const drawW = 120 * scale, drawH = 36 * scale;
   ctx.save();
   ctx.translate(x, y);
   ctx.drawImage(missileImg, -drawW/2, -drawH/2, drawW, drawH);
