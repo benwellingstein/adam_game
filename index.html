@@ -192,10 +192,10 @@ function updatePlaying(dt) {
     if (o.sfxDone) continue;
     if (o.type === 'ars' && o.x < R.x) {
       o.sfxDone = true;
-      playSound(sfxArsim[Math.floor(Math.random() * sfxArsim.length)]);
+      if (Math.random() < 2/3) playSound(sfxArsim[Math.floor(Math.random() * sfxArsim.length)]);
     } else if (o.type === 'rocket' && o.x < R.x) {
       o.sfxDone = true;
-      playSound(sfxMissiles[Math.floor(Math.random() * sfxMissiles.length)]);
+      if (Math.random() < 2/3) playSound(sfxMissiles[Math.floor(Math.random() * sfxMissiles.length)]);
     }
   }
 
