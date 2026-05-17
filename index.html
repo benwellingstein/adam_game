@@ -47,6 +47,7 @@ audio.src = SONG;
 const arsImgs = [1,2,3].map(n => { const img = new Image(); img.src = `Images/ars${n}.png`; return img; });
 const missileImg = new Image(); missileImg.src = 'Images/missile.png';
 const sverdiImg  = new Image(); sverdiImg.src  = 'Images/sverdi.png';
+const runFrames  = [1,2,3,4].map(n => { const img = new Image(); img.src = `Images/run_animation/${n}.png`; return img; });
 const houseImg   = new Image(); houseImg.src   = 'Images/house.png';
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
@@ -54,7 +55,7 @@ function playSound(snd) { snd.currentTime = 0; snd.play().catch(() => {}); }
 const sfxJump     = new Audio('sounds/jump.mp3');
 const sfxDeaths   = [new Audio('sounds/death.mp3'), new Audio('sounds/death2.mp3')];
 const sfxDeathBooms = [new Audio('sounds/DEATHBOOM1.mp3.mp3'), new Audio('sounds/DEATHBOOM2.mp3.mp3')];
-const sfxDeathStab  = new Audio('sounds/DEATHSTAB.mp3.mp3');
+const sfxDeathStabs = [new Audio('sounds/DEATHSTAB.mp3.mp3'), new Audio('sounds/DEATHSTAB2.mp3.mp3'), new Audio('sounds/DEATHSTAB3.mp3.mp3')];
 const sfxArsim    = [1,2,3,4,5].map(n => new Audio(`sounds/arsim/ars${n}.mp3`));
 const sfxMissiles = [
   new Audio('sounds/missiles/missile1.mp3'),
@@ -249,7 +250,7 @@ const ROCKET_DEATH_TEXTS = [
 function killRunner(killedBy) {
   state = S.DEAD; deadTick = 0; audio.pause(); lastKiller = killedBy;
   if (killedBy === 'rocket') playSound(sfxDeathBooms[Math.floor(Math.random() * sfxDeathBooms.length)]);
-  else playSound(sfxDeathStab);
+  else playSound(sfxDeathStabs[Math.floor(Math.random() * sfxDeathStabs.length)]);
   if (killedBy === 'rocket') explosion = { x: R.x, y: R.y - 48, tick: 0 };
   R.angle = Math.PI;
   R.deadVY = -10;
@@ -456,14 +457,16 @@ function drawGround() {
 }
 
 // ── Runner ────────────────────────────────────────────────────────────────────
-function drawRunner(x, y, _fc, jumping, angle, dead) {
-  if (!sverdiImg.complete || !sverdiImg.naturalWidth) return;
+function drawRunner(x, y, fc, jumping, angle, dead) {
+  const useStatic = jumping || dead;
+  const img = useStatic ? sverdiImg : runFrames[Math.floor(fc / 6) % 4];
+  if (!img || !img.complete || !img.naturalWidth) return;
   const drawH = 96;
-  const drawW = drawH * sverdiImg.naturalWidth / sverdiImg.naturalHeight;
+  const drawW = drawH * img.naturalWidth / img.naturalHeight;
   ctx.save();
   ctx.translate(x, y);
   if (angle) ctx.rotate(angle);
-  ctx.drawImage(sverdiImg, -drawW/2, -drawH, drawW, drawH);
+  ctx.drawImage(img, -drawW/2, -drawH, drawW, drawH);
   ctx.restore();
 }
 
