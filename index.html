@@ -11,10 +11,11 @@
     canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
     #overlay {
       position: fixed; inset: 0;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
       background: rgba(0,20,60,0.72); color: white;
-      font-family: 'Courier New', monospace; text-align: center; padding: 20px;
+      font-family: 'Courier New', monospace; text-align: center; padding: 16px 20px;
       direction: rtl; unicode-bidi: plaintext;
+      overflow-y: auto;
     }
     #overlay h1 { font-size: clamp(1.8rem,6vw,4rem); margin-bottom:.8rem; line-height:1.2; }
     #overlay p  { font-size: clamp(1rem,3vw,1.5rem); opacity:.88; margin-top:.4rem; }
