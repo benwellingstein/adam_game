@@ -554,10 +554,6 @@ function drawExplosion() {
   ctx.save(); ctx.globalAlpha = alpha; ctx.translate(explosion.x, explosion.y);
   star(radius, radius*0.45, '#c0392b'); star(radius*0.8, radius*0.38, '#e67e22');
   star(radius*0.6, radius*0.28, '#f1c40f'); star(radius*0.35, radius*0.18, '#fff');
-  const fs = Math.max(12, radius * 0.45);
-  ctx.font = `bold ${fs|0}px Arial,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillStyle='#333'; ctx.fillText('BOOM!',2,2);
-  ctx.fillStyle='#fff'; ctx.fillText('BOOM!',0,0);
   ctx.restore();
 }
 
