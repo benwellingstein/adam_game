@@ -736,7 +736,7 @@ function drawCelebDisk() {
   const size = canvas.height * 0.36 * ease;
   if (size < 1) { diskHit.r = 0; return; }
   const cx = canvas.width / 2;
-  const cy = GND() - size * 0.85;
+  const cy = GND() - size * 0.55;
   diskHit.cx = cx; diskHit.cy = cy; diskHit.r = size / 2;
   const spinT = Math.min(1, (celebTick - DELAY) / 90);
   const angle = spinT * Math.PI * 2;
