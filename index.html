@@ -693,29 +693,28 @@ function drawCelebParticles() {
 function drawCelebText() {
   if (celebTick < 30) return;
   const pulse = 1 + Math.sin(fc * .07) * .05;
-  const full  = ['ווהוו סברדי הגיע בשלום לאולפן 🎉', 'עכשיו הוא ואדם בלאגן יכולים', 'לבשל עוד באנגרים 🏠'];
-  const heb   = ['ווהוו סברדי הגיע בשלום לאולפן',    'עכשיו הוא ואדם בלאגן יכולים', 'לבשל עוד באנגרים'   ];
+  const lines = [
+    'ווהוו סברדי הגיע בשלום לאולפן 🎉',
+    'עכשיו הוא ואדם בלאגן יכולים',
+    'לבשל עוד באנגרים 🏠'
+  ];
   let fs = Math.min(canvas.width * .085, 64);
   ctx.font = `bold ${fs}px Arial,sans-serif`;
-  const measured = Math.max(...full.map(l => ctx.measureText(l).width));
+  const measured = Math.max(...lines.map(l => ctx.measureText(l).width));
   const maxW = canvas.width * 0.92 / pulse;
   if (measured > maxW) fs *= maxW / measured;
   ctx.save(); ctx.translate(canvas.width/2, canvas.height*.28); ctx.scale(pulse,pulse);
   ctx.font=`bold ${fs}px Arial,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.direction='rtl';
   const gap = fs * 1.3;
-  // thin stroke — light enough not to obscure emoji detail
-  ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.lineJoin='round';
+  ctx.strokeStyle='#fff'; ctx.lineWidth=7; ctx.lineJoin='round';
   ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowOffsetX=3; ctx.shadowOffsetY=3; ctx.shadowBlur=4;
-  full.forEach((l,i) => ctx.strokeText(l, 0, i*gap));
+  lines.forEach((l,i) => ctx.strokeText(l, 0, i*gap));
   ctx.shadowColor='transparent';
-  // gradient fill on Hebrew text only
   const rg=ctx.createLinearGradient(-fs*3,0,fs*3,0);
-  rg.addColorStop(0,'#ffcc00'); rg.addColorStop(.33,'#44ff88');
-  rg.addColorStop(.67,'#44aaff'); rg.addColorStop(1,'#cc44ff');
+  rg.addColorStop(0,'#ff4444'); rg.addColorStop(.25,'#ffcc00');
+  rg.addColorStop(.5,'#44ff88'); rg.addColorStop(.75,'#44aaff'); rg.addColorStop(1,'#cc44ff');
   ctx.fillStyle=rg;
-  heb.forEach((l,i) => ctx.fillText(l, 0, i*gap));
-  // redraw full line — emoji renders in native color regardless of fillStyle
-  full.forEach((l,i) => ctx.fillText(l, 0, i*gap));
+  lines.forEach((l,i) => ctx.fillText(l, 0, i*gap));
   ctx.restore();
 }
 
@@ -729,7 +728,8 @@ function drawCelebDisk() {
   if (size < 1) return;
   const cx = canvas.width / 2;
   const cy = GND() - size * 0.5;
-  const angle = fc * 0.04;
+  const spinT = Math.min(1, (celebTick - DELAY) / 90);
+  const angle = spinT * Math.PI * 2;
   ctx.save();
   ctx.globalAlpha = ease;
   ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 10;
