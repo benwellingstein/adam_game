@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>האוס 30</title>
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://house30.netlify.app">
+  <meta property="og:title"       content="האוס 30 – המשחק">
+  <meta property="og:description" content="תעזרו לסברדי להגיע לאולפן של אדם בלאגן! רק תזהרו שלא להדקר בדרך…">
+  <meta property="og:image"       content="https://house30.netlify.app/Images/Header.png">
+  <meta name="twitter:card"       content="summary_large_image">
+  <meta name="description"        content="תעזרו לסברדי להגיע לאולפן של אדם בלאגן! משחק ריצה חינמי בדפדפן.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💿</text></svg>">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -131,23 +138,28 @@ const sfxCtx  = new (window.AudioContext || window.webkitAudioContext)();
 const sfxGain = sfxCtx.createGain();
 sfxGain.gain.value = 2.5;
 sfxGain.connect(sfxCtx.destination);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && sfxCtx.state === 'suspended') sfxCtx.resume(); });
 
-function connectSfx(snd) { snd.preload = 'auto'; sfxCtx.createMediaElementSource(snd).connect(sfxGain); return snd; }
-function resumeSfx() { if (sfxCtx.state !== 'running') return sfxCtx.resume(); return Promise.resolve(); }
-function playSound(snd) { resumeSfx().then(() => { snd.currentTime = 0; snd.play().catch(() => {}); }); }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) resumeSfx(); });
+const sfxGameStart = Object.assign(new Audio('sounds/gamestart%20sound.mp3'), { preload: 'auto' });
 
-const sfxGameStart  = Object.assign(new Audio('sounds/gamestart%20sound.mp3'), { preload: 'auto' });
-const sfxJump       = connectSfx(new Audio('sounds/jump.mp3'));
-const sfxDeaths     = [new Audio('sounds/death.mp3'), new Audio('sounds/death2.mp3')].map(connectSfx);
-const sfxDeathBooms = [new Audio('sounds/DEATHBOOM1.mp3.mp3'), new Audio('sounds/DEATHBOOM2.mp3.mp3')].map(connectSfx);
-const sfxDeathStabs = [new Audio('sounds/DEATHSTAB.mp3.mp3'), new Audio('sounds/DEATHSTAB2.mp3.mp3'), new Audio('sounds/DEATHSTAB3.mp3.mp3')].map(connectSfx);
-const sfxArsim      = [1,2,3,4,5].map(n => connectSfx(new Audio(`sounds/arsim/ars${n}.mp3`)));
-const sfxMissiles   = [
-  new Audio('sounds/missiles/missile1.mp3'),
-  new Audio('sounds/missiles/missile2.mp3'),
-  new Audio('sounds/missiles/missile%203.mp3')
-].map(connectSfx);
+async function loadBuf(url) {
+  try { return await sfxCtx.decodeAudioData(await (await fetch(url)).arrayBuffer()); } catch { return null; }
+}
+function playSound(buf) {
+  if (!buf) return;
+  const go = () => { const src = sfxCtx.createBufferSource(); src.buffer = buf; src.connect(sfxGain); src.start(); };
+  if (sfxCtx.state === 'suspended') sfxCtx.resume().then(go); else go();
+}
+
+let sfxJump, sfxDeaths, sfxDeathBooms, sfxDeathStabs, sfxArsim, sfxMissiles;
+Promise.all([
+  loadBuf('sounds/jump.mp3'),
+  Promise.all(['sounds/death.mp3','sounds/death2.mp3'].map(loadBuf)),
+  Promise.all(['sounds/DEATHBOOM1.mp3.mp3','sounds/DEATHBOOM2.mp3.mp3'].map(loadBuf)),
+  Promise.all(['sounds/DEATHSTAB.mp3.mp3','sounds/DEATHSTAB2.mp3.mp3','sounds/DEATHSTAB3.mp3.mp3'].map(loadBuf)),
+  Promise.all([1,2,3,4,5].map(n => loadBuf(`sounds/arsim/ars${n}.mp3`))),
+  Promise.all(['sounds/missiles/missile1.mp3','sounds/missiles/missile2.mp3','sounds/missiles/missile%203.mp3'].map(loadBuf))
+]).then(([j, d, db, ds, a, m]) => { sfxJump=j; sfxDeaths=d; sfxDeathBooms=db; sfxDeathStabs=ds; sfxArsim=a; sfxMissiles=m; });
 
 let songDuration = 139.781;
 const S = { LOADING:0, READY:1, PLAYING:2, DEAD:3, ENDING:4, CELEBRATION:5 };
@@ -186,7 +198,7 @@ let speed = 5, gndScroll = 0;
 let houseX = 0, houseActive = false;
 let confetti = [], fireworks = [], celebTick = 0;
 const diskHit = { cx: 0, cy: 0, r: 0 };
-let deadTick = 0;
+let deadTick = 0, hitFlash = 0;
 let isNight = false, moonOff = 0, moonAlpha = 0;
 function genStars() {
   const skyH = innerHeight * 0.82;
@@ -264,18 +276,6 @@ function goReady() {
   initRunner();
 }
 
-let sfxWarmedUp = false;
-function warmupSfx() {
-  if (sfxWarmedUp) return;
-  sfxWarmedUp = true;
-  sfxGain.gain.setValueAtTime(0, sfxCtx.currentTime);
-  const all = [sfxJump, ...sfxDeaths, ...sfxDeathBooms, ...sfxDeathStabs, ...sfxArsim, ...sfxMissiles];
-  all.forEach(s => s.play().catch(() => {}));
-  setTimeout(() => {
-    all.forEach(s => { s.pause(); s.currentTime = 0; });
-    sfxGain.gain.setValueAtTime(2.5, sfxCtx.currentTime);
-  }, 80);
-}
 
 function startGame() {
   state = S.PLAYING; ovEl.classList.add('hidden'); socials.classList.add('hidden'); pb.classList.remove('hidden');
@@ -285,7 +285,6 @@ function startGame() {
   isNight = false; moonOff = 0; moonAlpha = 0; totalScroll = 0;
   initRunner();
   if (sfxCtx.state === 'suspended') sfxCtx.resume();
-  warmupSfx();
   audio.currentTime = 0; audio.play().catch(() => {});
 }
 
@@ -295,6 +294,7 @@ let explosion = null;
 function update(dt) {
   fc += dt;
   if (explosion) { explosion.tick += dt; if (explosion.tick >= 45) explosion = null; }
+  if (hitFlash > 0) hitFlash = Math.max(0, hitFlash - 0.07 * dt);
   if      (state === S.PLAYING)     updatePlaying(dt);
   else if (state === S.ENDING)      updateEnding(dt);
   else if (state === S.DEAD)        updateDead(dt);
@@ -391,7 +391,8 @@ const ROCKET_DEATH_TEXTS = [
 ];
 
 function killRunner(killedBy) {
-  state = S.DEAD; deadTick = 0; audio.pause(); lastKiller = killedBy;
+  state = S.DEAD; deadTick = 0; hitFlash = 1; audio.pause(); lastKiller = killedBy;
+  playSound(sfxDeaths[Math.floor(Math.random() * sfxDeaths.length)]);
   if (killedBy === 'rocket') playSound(sfxDeathBooms[Math.floor(Math.random() * sfxDeathBooms.length)]);
   else playSound(sfxDeathStabs[Math.floor(Math.random() * sfxDeathStabs.length)]);
   if (killedBy === 'rocket') explosion = { x: R.x, y: R.y - 48, tick: 0 };
@@ -503,6 +504,13 @@ function render() {
     }
   }
   if (explosion) drawExplosion();
+  if (hitFlash > 0) {
+    ctx.save();
+    ctx.globalAlpha = hitFlash * 0.45;
+    ctx.fillStyle = '#ff2222';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
 }
 
 // ── Sky ───────────────────────────────────────────────────────────────────────
