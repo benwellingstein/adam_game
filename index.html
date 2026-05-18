@@ -33,6 +33,9 @@
     #artists a { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; opacity:0.8; transition:opacity 0.2s,transform 0.2s; }
     #artists a:hover { opacity:1; transform:scale(1.15); }
     #artists svg { width:16px; height:16px; fill:white; }
+    #track-btn { display:flex; align-items:center; gap:8px; padding:7px 18px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.5); border-radius:20px; color:white; font-family:'Courier New',monospace; font-size:clamp(0.75rem,2.2vw,1rem); font-weight:bold; text-decoration:none; letter-spacing:0.03em; transition:background 0.2s,transform 0.15s; white-space:nowrap; }
+    #track-btn:hover { background:rgba(255,255,255,0.28); transform:scale(1.04); }
+    #track-btn svg { width:18px; height:18px; fill:white; flex-shrink:0; }
     #rotate-msg { display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,20,60,0.92); color:white; font-family:'Courier New',monospace; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; direction:rtl; }
     #rotate-msg.show { display:flex; }
     #rotate-msg .rotate-icon { font-size:clamp(3rem,15vw,6rem); margin-bottom:16px; animation:spin90 1.4s ease-in-out infinite alternate; transform-origin:center; }
@@ -71,6 +74,10 @@
   <p  id="ov-s">שנייה טוען...</p>
 </div>
 <div id="artists" class="hidden">
+  <a id="track-btn" href="https://nanadisc.lnk.to/House30" target="_blank">
+    <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+    האזינו לשיר
+  </a>
   <div class="artist-row">
     <span class="artist-label">אדם בלאגן</span>
     <a href="https://www.instagram.com/adam_balagan/" target="_blank" style="background:#7B8299">
@@ -152,6 +159,7 @@ function playSound(snd) {
   if (sfxCtx.state === 'suspended') sfxCtx.resume().then(go); else go();
 }
 
+const sfxGameStart  = connectSfx(new Audio('sounds/gamestart%20sound.mp3'));
 const sfxJump       = connectSfx(new Audio('sounds/jump.mp3'));
 const sfxDeaths     = [new Audio('sounds/death.mp3'), new Audio('sounds/death2.mp3')].map(connectSfx);
 const sfxDeathBooms = [new Audio('sounds/DEATHBOOM1.mp3.mp3'), new Audio('sounds/DEATHBOOM2.mp3.mp3')].map(connectSfx);
@@ -234,7 +242,7 @@ function randSpawn() { return 80 + Math.random() * 80; }
 
 // ── Input ─────────────────────────────────────────────────────────────────────
 function onTap() {
-  if (state === S.READY) { startGame(); return; }
+  if (state === S.READY) { playSound(sfxGameStart); startGame(); return; }
   if (state === S.DEAD || state >= S.ENDING) return;
   if (R.onGround) { R.vy = JV(); R.onGround = false; R.frozenFrame = Math.random() < 0.5 ? 1 : 3; playSound(sfxJump); }
 }
