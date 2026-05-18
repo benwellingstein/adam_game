@@ -36,7 +36,7 @@
     #rotate-msg { display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,20,60,0.92); color:white; font-family:'Courier New',monospace; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; direction:rtl; }
     #rotate-msg.show { display:flex; }
     #rotate-msg .rotate-icon { font-size:clamp(3rem,15vw,6rem); margin-bottom:16px; animation:spin90 1.4s ease-in-out infinite alternate; transform-origin:center; }
-    @keyframes spin90 { 0% { transform:rotate(0deg); } 100% { transform:rotate(90deg); } }
+    @keyframes spin90 { 0% { transform:rotate(90deg); } 100% { transform:rotate(0deg); } }
     #rotate-msg h2 { font-size:clamp(1.2rem,5vw,2rem); margin-bottom:8px; }
     #rotate-msg p  { font-size:clamp(0.85rem,3vw,1.2rem); opacity:0.75; }
     #pb { position:fixed; bottom:0; left:0; right:0; height:6px; background:rgba(0,0,0,.2); }
@@ -170,7 +170,7 @@ let stars = [];
 const rotateMsg = document.getElementById('rotate-msg');
 let isPortrait = false;
 function checkOrientation() {
-  const portrait = innerWidth < innerHeight;
+  const portrait = innerWidth > innerHeight;
   if (portrait === isPortrait) return;
   isPortrait = portrait;
   rotateMsg.classList.toggle('show', portrait);
