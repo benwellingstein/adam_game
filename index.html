@@ -225,7 +225,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); onTap(); }
   if (e.key === 'd' || e.key === 'D') { debugMode = !debugMode; }
   if (debugMode && state === S.PLAYING) {
-    if (e.key === 'n' || e.key === 'N') audio.currentTime = songDuration / 2;
+    if (e.key === 'n' || e.key === 'N') audio.currentTime = songDuration / 2 - 3;
     if (e.key === 'h' || e.key === 'H') audio.currentTime = Math.max(0, songDuration - 8);
   }
 });
@@ -283,7 +283,7 @@ function physicsStep(dt) {
 }
 
 function advanceMoon(spd, dt) {
-  moonOff = (moonOff + spd * 0.12) % (canvas.width * 8);
+  moonOff += spd * 0.12;
   if (isNight) moonAlpha = Math.min(1, moonAlpha + 0.006 * dt);
 }
 
@@ -505,15 +505,16 @@ function drawSky() {
 function drawMoon() {
   if (moonAlpha <= 0) return;
   const r = Math.max(20, Math.min(canvas.width, canvas.height) * 0.046);
-  // Slow parallax: moon drifts at ~8% of scroll speed
-  const mx = Math.max(r * 2, canvas.width * 0.78 - moonOff * 0.08);
+  // Sine oscillation keeps moon in right portion of sky, never off screen
+  const mx = canvas.width * 0.75 + Math.sin(moonOff * 0.001) * canvas.width * 0.12;
   const my = canvas.height * 0.17;
   ctx.save();
+  // Draw disc at fade-in alpha
   ctx.globalAlpha = moonAlpha;
-  // Full disc
   ctx.fillStyle = '#BCC1D1';
   ctx.beginPath(); ctx.arc(mx, my, r, 0, Math.PI * 2); ctx.fill();
-  // Crescent shadow (night sky color overlay)
+  // Shadow at full opacity so it fully covers the disc (no halo)
+  ctx.globalAlpha = 1;
   ctx.fillStyle = '#454A5A';
   ctx.beginPath(); ctx.arc(mx + r * 0.42, my - r * 0.04, r * 0.84, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
@@ -701,7 +702,7 @@ dbgToggle.addEventListener('click', () => {
   dbgToggle.style.borderColor = debugMode ? '#ff0' : '#0f0';
 });
 document.getElementById('dbg-n').addEventListener('click', () => {
-  if (state === S.PLAYING) audio.currentTime = songDuration / 2;
+  if (state === S.PLAYING) audio.currentTime = songDuration / 2 - 3;
 });
 document.getElementById('dbg-h').addEventListener('click', () => {
   if (state === S.PLAYING) audio.currentTime = Math.max(0, songDuration - 8);
