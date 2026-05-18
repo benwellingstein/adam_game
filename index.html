@@ -35,6 +35,15 @@
     #pb { position:fixed; bottom:0; left:0; right:0; height:6px; background:rgba(0,0,0,.2); }
     #pf { height:100%; width:0%; background:linear-gradient(90deg,#44aaff,#ff44aa); }
     #pb.hidden { display:none; }
+    /* ── DEBUG (remove before production) ── */
+    #dbg-toggle { position:fixed; top:8px; right:8px; z-index:999; padding:4px 8px; background:rgba(0,0,0,0.55); color:#0f0; font:bold 12px monospace; border:1px solid #0f0; border-radius:4px; cursor:pointer; touch-action:manipulation; user-select:none; }
+    #dbg-panel { display:none; position:fixed; top:36px; right:8px; z-index:998; background:rgba(0,0,0,0.78); color:#0f0; font:12px monospace; padding:8px 10px; border-radius:6px; border:1px solid #0f0; min-width:170px; line-height:1.8; }
+    #dbg-panel.open { display:block; }
+    #dbg-panel .dbg-row { white-space:nowrap; }
+    #dbg-panel .dbg-btns { display:flex; gap:6px; margin-top:8px; }
+    #dbg-panel .dbg-btns button { flex:1; padding:6px 0; background:rgba(0,255,0,0.15); color:#0f0; border:1px solid #0f0; border-radius:4px; font:bold 12px monospace; cursor:pointer; touch-action:manipulation; }
+    #dbg-panel .dbg-btns button:active { background:rgba(0,255,0,0.4); }
+    /* ── END DEBUG ── */
   </style>
 </head>
 <body>
@@ -81,6 +90,22 @@
   </div>
   </div>
 </div>
+<!-- DEBUG (remove before production) -->
+<button id="dbg-toggle">DBG</button>
+<div id="dbg-panel">
+  <div class="dbg-row" id="dbg-state"></div>
+  <div class="dbg-row" id="dbg-time"></div>
+  <div class="dbg-row" id="dbg-speed"></div>
+  <div class="dbg-row" id="dbg-runner"></div>
+  <div class="dbg-row" id="dbg-obs"></div>
+  <div class="dbg-row" id="dbg-fps"></div>
+  <div class="dbg-btns">
+    <button id="dbg-n">⏭ Mid</button>
+    <button id="dbg-h">🏠 House</button>
+    <button id="dbg-d">💀 Die</button>
+  </div>
+</div>
+<!-- END DEBUG -->
 <audio id="audio" preload="auto"></audio>
 <script>
 const SONG = 'SVERDY%20ADAM%20BALAGAN%20HOUSE%2030%20%5BNew%20Mix%5D%20-%20%5BPRECISE%20MASTER%5D%2044.1Khz%20320Kbps.mp3';
@@ -108,10 +133,10 @@ const sfxGain = sfxCtx.createGain();
 sfxGain.gain.value = 2.5;
 sfxGain.connect(sfxCtx.destination);
 
-function connectSfx(snd) { sfxCtx.createMediaElementSource(snd).connect(sfxGain); return snd; }
+function connectSfx(snd) { snd.preload = 'auto'; sfxCtx.createMediaElementSource(snd).connect(sfxGain); return snd; }
 function playSound(snd) {
-  if (sfxCtx.state === 'suspended') sfxCtx.resume();
-  snd.currentTime = 0; snd.play().catch(() => {});
+  const go = () => { snd.currentTime = 0; snd.play().catch(() => {}); };
+  if (sfxCtx.state === 'suspended') sfxCtx.resume().then(go); else go();
 }
 
 const sfxJump       = connectSfx(new Audio('sounds/jump.mp3'));
@@ -232,6 +257,7 @@ function startGame() {
   confetti = []; fireworks = []; celebTick = 0;
   isNight = false; moonOff = 0; moonAlpha = 0; totalScroll = 0;
   initRunner();
+  if (sfxCtx.state === 'suspended') sfxCtx.resume();
   audio.currentTime = 0; audio.play().catch(() => {});
 }
 
@@ -663,12 +689,45 @@ function drawExplosion() {
   ctx.restore();
 }
 
+// ── DEBUG panel (remove before production) ────────────────────────────────────
+const dbgToggle = document.getElementById('dbg-toggle');
+const dbgPanel  = document.getElementById('dbg-panel');
+dbgToggle.addEventListener('click', () => {
+  debugMode = !debugMode;
+  dbgPanel.classList.toggle('open', debugMode);
+  dbgToggle.style.color = debugMode ? '#ff0' : '#0f0';
+  dbgToggle.style.borderColor = debugMode ? '#ff0' : '#0f0';
+});
+document.getElementById('dbg-n').addEventListener('click', () => {
+  if (state === S.PLAYING) audio.currentTime = songDuration / 2;
+});
+document.getElementById('dbg-h').addEventListener('click', () => {
+  if (state === S.PLAYING) audio.currentTime = Math.max(0, songDuration - 8);
+});
+document.getElementById('dbg-d').addEventListener('click', () => {
+  if (state === S.PLAYING) killRunner('ars');
+});
+const stateNames = ['LOADING','READY','PLAYING','DEAD','ENDING','CELEBRATION'];
+let dbgFps = 0, dbgFpsTs = 0, dbgFpsCount = 0;
+function updateDbgPanel(ts) {
+  if (!debugMode) return;
+  dbgFpsCount++;
+  if (ts - dbgFpsTs >= 500) { dbgFps = Math.round(dbgFpsCount * 1000 / (ts - dbgFpsTs)); dbgFpsCount = 0; dbgFpsTs = ts; }
+  document.getElementById('dbg-state').textContent  = `state: ${stateNames[state]}`;
+  document.getElementById('dbg-time').textContent   = `time:  ${audio.currentTime.toFixed(2)} / ${songDuration.toFixed(2)}`;
+  document.getElementById('dbg-speed').textContent  = `speed: ${speed.toFixed(2)}`;
+  document.getElementById('dbg-runner').textContent = `R.y:   ${R.y.toFixed(0)}  gnd:${GND().toFixed(0)}  onGnd:${R.onGround}`;
+  document.getElementById('dbg-obs').textContent    = `obs:   ${obstacles.length}  night:${isNight}`;
+  document.getElementById('dbg-fps').textContent    = `fps:   ${dbgFps}`;
+}
+// ── END DEBUG ─────────────────────────────────────────────────────────────────
+
 // ── Main loop ─────────────────────────────────────────────────────────────────
 let lastTs = 0;
 function loop(ts) {
   const dt = lastTs ? Math.min((ts - lastTs) / (1000 / 60), 3) : 1;
   lastTs = ts;
-  update(dt); render(); requestAnimationFrame(loop);
+  update(dt); render(); updateDbgPanel(ts); requestAnimationFrame(loop);
 }
 
 audio.load();
