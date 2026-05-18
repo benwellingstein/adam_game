@@ -80,7 +80,6 @@
     </a>
   </div>
   </div>
-</div>
 <audio id="audio" preload="auto"></audio>
 <script>
 const SONG = 'SVERDY%20ADAM%20BALAGAN%20HOUSE%2030%20%5BNew%20Mix%5D%20-%20%5BPRECISE%20MASTER%5D%2044.1Khz%20320Kbps.mp3';
@@ -129,7 +128,7 @@ let songDuration = 139.781;
 const S = { LOADING:0, READY:1, PLAYING:2, DEAD:3, ENDING:4, CELEBRATION:5 };
 let state = S.LOADING, fc = 0;
 
-function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; genStars(); }
 window.addEventListener('resize', () => { resize(); initRunner(); });
 resize();
 
@@ -153,6 +152,23 @@ let houseX = 0, houseActive = false;
 let confetti = [], fireworks = [], celebTick = 0;
 let deadTick = 0;
 let isNight = false, moonOff = 0, moonAlpha = 0;
+let stars = [];
+function genStars() {
+  const skyH = innerHeight * 0.82;
+  const cols = 11, rows = 10;
+  const cw = innerWidth / cols, ch = skyH / rows;
+  stars = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      stars.push({
+        x: c * cw + Math.random() * cw,
+        y: r * ch + Math.random() * ch,
+        size: Math.random() < 0.15 ? 2 : 1,
+        alpha: 0.45 + Math.random() * 0.55
+      });
+    }
+  }
+}
 let totalScroll = 0;
 
 // Ground imperfections — generated once, tiled at BUMP_TILE intervals
@@ -447,13 +463,12 @@ function drawSky() {
   ctx.fillStyle = isNight ? '#454A5A' : '#BCC1D1';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (isNight) {
-    // Pixel stars in lightest palette color
-    ctx.fillStyle = '#BCC1D1';
-    for (let i = 0; i < 70; i++) {
-      const sx = (i * 6271 + 42 * 1009) % canvas.width;
-      const sy = (i * 3847 + 42 * 719) % (GND() * 0.88);
-      ctx.fillRect(Math.round(sx), Math.round(sy), i % 4 === 0 ? 2 : 1, i % 4 === 0 ? 2 : 1);
+    for (const s of stars) {
+      ctx.globalAlpha = s.alpha * moonAlpha;
+      ctx.fillStyle = '#BCC1D1';
+      ctx.fillRect(Math.round(s.x), Math.round(s.y), s.size, s.size);
     }
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -599,17 +614,29 @@ function drawCelebParticles() {
 
 function drawCelebText() {
   if (celebTick < 30) return;
-  const pulse=1+Math.sin(fc*.07)*.05, fs=Math.min(canvas.width*.085,64);
-  ctx.save(); ctx.translate(canvas.width/2, canvas.height*.33); ctx.scale(pulse,pulse);
+  const pulse = 1 + Math.sin(fc * .07) * .05;
+  const lines = [
+    'ווהוו סברדי הגיע בשלום לאולפן 🎉',
+    'עכשיו הוא ואדם בלאגן יכולים',
+    'לבשל עוד באנגרים 🏠'
+  ];
+  let fs = Math.min(canvas.width * .085, 64);
+  ctx.font = `bold ${fs}px Arial,sans-serif`;
+  const measured = Math.max(...lines.map(l => ctx.measureText(l).width));
+  const maxW = canvas.width * 0.92 / pulse;
+  if (measured > maxW) fs *= maxW / measured;
+  ctx.save(); ctx.translate(canvas.width/2, canvas.height*.28); ctx.scale(pulse,pulse);
   ctx.font=`bold ${fs}px Arial,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.direction='rtl';
-  const line1='ווהוו סברדי הגיע בשלום לאולפן 🎉', line2='עכשיו הוא ואדם בלאגן יכולים לבשל עוד באנגרים 🏠';
-  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillText(line1,3,3); ctx.fillText(line2,3,fs+15);
+  const gap = fs * 1.3;
+  ctx.fillStyle='rgba(0,0,0,.3)';
+  lines.forEach((l,i) => ctx.fillText(l, 3, i*gap+3));
   ctx.strokeStyle='#fff'; ctx.lineWidth=7; ctx.lineJoin='round';
-  ctx.strokeText(line1,0,0); ctx.strokeText(line2,0,fs+12);
+  lines.forEach((l,i) => ctx.strokeText(l, 0, i*gap));
   const rg=ctx.createLinearGradient(-fs*3,0,fs*3,0);
   rg.addColorStop(0,'#ff4444'); rg.addColorStop(.25,'#ffcc00');
   rg.addColorStop(.5,'#44ff88'); rg.addColorStop(.75,'#44aaff'); rg.addColorStop(1,'#cc44ff');
-  ctx.fillStyle=rg; ctx.fillText(line1,0,0); ctx.fillText(line2,0,fs+12);
+  ctx.fillStyle=rg;
+  lines.forEach((l,i) => ctx.fillText(l, 0, i*gap));
   ctx.restore();
 }
 
