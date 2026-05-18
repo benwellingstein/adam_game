@@ -231,10 +231,11 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') onRelease();
 });
-document.addEventListener('touchstart', e => { if (socials.contains(e.target)) return; e.preventDefault(); onTap(); }, { passive:false });
-document.addEventListener('touchend',   e => { if (socials.contains(e.target)) return; e.preventDefault(); onRelease(); }, { passive:false });
-document.addEventListener('mousedown', e => { if (socials.contains(e.target)) return; onTap(); });
-document.addEventListener('mouseup',   e => { if (socials.contains(e.target)) return; onRelease(); });
+const isDbgEl = e => document.getElementById('dbg-toggle').contains(e.target) || document.getElementById('dbg-panel').contains(e.target);
+document.addEventListener('touchstart', e => { if (socials.contains(e.target) || isDbgEl(e)) return; e.preventDefault(); onTap(); }, { passive:false });
+document.addEventListener('touchend',   e => { if (socials.contains(e.target) || isDbgEl(e)) return; e.preventDefault(); onRelease(); }, { passive:false });
+document.addEventListener('mousedown', e => { if (socials.contains(e.target) || isDbgEl(e)) return; onTap(); });
+document.addEventListener('mouseup',   e => { if (socials.contains(e.target) || isDbgEl(e)) return; onRelease(); });
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 audio.addEventListener('loadedmetadata', () => { songDuration = audio.duration || songDuration; goReady(); });
