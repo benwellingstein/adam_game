@@ -222,6 +222,7 @@ function randSpawn() { return 80 + Math.random() * 80; }
 
 // ── Input ─────────────────────────────────────────────────────────────────────
 function onTap() {
+  if (sfxCtx.state === 'suspended') sfxCtx.resume();
   if (state === S.READY) { sfxGameStart.currentTime = 0; sfxGameStart.play().catch(() => {}); startGame(); return; }
   if (state === S.DEAD || state >= S.ENDING) return;
   if (R.onGround) { R.vy = JV(); R.onGround = false; R.frozenFrame = Math.random() < 0.5 ? 1 : 3; playSound(sfxJump); }
