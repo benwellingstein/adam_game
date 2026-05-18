@@ -168,17 +168,15 @@ let state = S.LOADING, fc = 0;
 let stars = [];
 
 const rotateMsg = document.getElementById('rotate-msg');
-let isPortrait = false;
 function checkOrientation() {
-  const portrait = innerWidth > innerHeight;
-  if (portrait === isPortrait) return;
-  isPortrait = portrait;
-  rotateMsg.classList.toggle('show', portrait);
-  if (portrait && state === S.PLAYING) audio.pause();
-  if (!portrait && state === S.PLAYING) audio.play().catch(() => {});
+  const landscape = innerWidth > innerHeight;
+  rotateMsg.classList.toggle('show', landscape);
+  if (landscape && state === S.PLAYING) audio.pause();
+  if (!landscape && state === S.PLAYING) audio.play().catch(() => {});
 }
 function resize() { canvas.width = innerWidth; canvas.height = innerHeight; genStars(); checkOrientation(); }
 window.addEventListener('resize', () => { resize(); initRunner(); });
+window.addEventListener('orientationchange', () => { setTimeout(() => { resize(); initRunner(); }, 100); });
 resize();
 
 const GND = () => canvas.height - Math.max(90, canvas.height * 0.13);
@@ -526,8 +524,9 @@ function drawSky() {
 function drawMoon() {
   if (moonAlpha <= 0) return;
   const r = Math.max(20, Math.min(canvas.width, canvas.height) * 0.046);
-  // Sine oscillation keeps moon in right portion of sky, never off screen
-  const mx = canvas.width * 0.75 + Math.sin(moonOff * 0.001) * canvas.width * 0.12;
+  // Moon moves right to left over the night half of the song, never off screen
+  const nightT = Math.max(0, Math.min(1, (audio.currentTime - songDuration / 2) / (songDuration / 2)));
+  const mx = canvas.width * (0.82 - nightT * 0.62);
   const my = canvas.height * 0.17;
   ctx.save();
   // Draw disc at fade-in alpha
