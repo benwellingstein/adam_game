@@ -46,15 +46,6 @@
     #pb { position:fixed; bottom:0; left:0; right:0; height:6px; background:rgba(0,0,0,.2); }
     #pf { height:100%; width:0%; background:linear-gradient(90deg,#44aaff,#ff44aa); }
     #pb.hidden { display:none; }
-    /* ── DEBUG (remove before production) ── */
-    #dbg-toggle { position:fixed; top:8px; right:8px; z-index:999; padding:4px 8px; background:rgba(0,0,0,0.55); color:#0f0; font:bold 12px monospace; border:1px solid #0f0; border-radius:4px; cursor:pointer; touch-action:manipulation; user-select:none; }
-    #dbg-panel { display:none; position:fixed; top:36px; right:8px; z-index:998; background:rgba(0,0,0,0.78); color:#0f0; font:12px monospace; padding:8px 10px; border-radius:6px; border:1px solid #0f0; min-width:170px; line-height:1.8; }
-    #dbg-panel.open { display:block; }
-    #dbg-panel .dbg-row { white-space:nowrap; }
-    #dbg-panel .dbg-btns { display:flex; gap:6px; margin-top:8px; }
-    #dbg-panel .dbg-btns button { flex:1; padding:6px 0; background:rgba(0,255,0,0.15); color:#0f0; border:1px solid #0f0; border-radius:4px; font:bold 12px monospace; cursor:pointer; touch-action:manipulation; }
-    #dbg-panel .dbg-btns button:active { background:rgba(0,255,0,0.4); }
-    /* ── END DEBUG ── */
   </style>
 </head>
 <body>
@@ -112,22 +103,6 @@
     <span>האוס 30<br>בסטרימינגז</span>
   </a>
 </div>
-<!-- DEBUG (remove before production) -->
-<button id="dbg-toggle">DBG</button>
-<div id="dbg-panel">
-  <div class="dbg-row" id="dbg-state"></div>
-  <div class="dbg-row" id="dbg-time"></div>
-  <div class="dbg-row" id="dbg-speed"></div>
-  <div class="dbg-row" id="dbg-runner"></div>
-  <div class="dbg-row" id="dbg-obs"></div>
-  <div class="dbg-row" id="dbg-fps"></div>
-  <div class="dbg-btns">
-    <button id="dbg-n">⏭ Mid</button>
-    <button id="dbg-h">🏠 House</button>
-    <button id="dbg-d">💀 Die</button>
-  </div>
-</div>
-<!-- END DEBUG -->
 <a id="disk-link" href="https://nanadisc.lnk.to/House30" target="_blank" style="display:none;position:fixed;border-radius:50%;cursor:pointer;z-index:5;"></a>
 <audio id="audio" preload="auto"></audio>
 <script>
@@ -254,19 +229,12 @@ function onTap() {
 function onRelease() {
   if (state === S.PLAYING && !R.onGround && R.vy < 0) R.vy *= 0.4;
 }
-let debugMode = false;
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); onTap(); }
-  if (e.key === 'd' || e.key === 'D') { debugMode = !debugMode; }
-  if (debugMode && state === S.PLAYING) {
-    if (e.key === 'n' || e.key === 'N') audio.currentTime = songDuration / 2 - 3;
-    if (e.key === 'h' || e.key === 'H') audio.currentTime = Math.max(0, songDuration - 8);
-  }
 });
 document.addEventListener('keyup', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') onRelease();
 });
-const isDbgEl = e => document.getElementById('dbg-toggle').contains(e.target) || document.getElementById('dbg-panel').contains(e.target);
 const blocked = () => rotateMsg.classList.contains('show');
 function hitsDisk(e) {
   if (state !== S.CELEBRATION || diskHit.r === 0) return false;
@@ -277,10 +245,10 @@ function hitsDisk(e) {
   return dx*dx + dy*dy <= diskHit.r * diskHit.r;
 }
 const diskLinkEl = document.getElementById('disk-link');
-document.addEventListener('touchstart', e => { if (blocked() || socials.contains(e.target) || isDbgEl(e) || diskLinkEl.contains(e.target)) return; e.preventDefault(); onTap(); }, { passive:false });
-document.addEventListener('touchend',   e => { if (blocked() || socials.contains(e.target) || isDbgEl(e) || diskLinkEl.contains(e.target)) return; e.preventDefault(); onRelease(); }, { passive:false });
-document.addEventListener('mousedown', e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; if (hitsDisk(e)) return; onTap(); });
-document.addEventListener('mouseup',   e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; onRelease(); });
+document.addEventListener('touchstart', e => { if (blocked() || socials.contains(e.target) || diskLinkEl.contains(e.target)) return; e.preventDefault(); onTap(); }, { passive:false });
+document.addEventListener('touchend',   e => { if (blocked() || socials.contains(e.target) || diskLinkEl.contains(e.target)) return; e.preventDefault(); onRelease(); }, { passive:false });
+document.addEventListener('mousedown', e => { if (blocked() || socials.contains(e.target)) return; if (hitsDisk(e)) return; onTap(); });
+document.addEventListener('mouseup',   e => { if (blocked() || socials.contains(e.target)) return; onRelease(); });
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 audio.addEventListener('loadedmetadata', () => { songDuration = audio.duration || songDuration; goReady(); });
@@ -535,14 +503,6 @@ function render() {
     }
   }
   if (explosion) drawExplosion();
-  if (debugMode) {
-    ctx.save();
-    ctx.font = 'bold 14px monospace'; ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(8, 8, 200, 22);
-    ctx.fillStyle = '#0f0'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(`DEBUG  [N] night  [H] house`, 14, 20);
-    ctx.restore();
-  }
 }
 
 // ── Sky ───────────────────────────────────────────────────────────────────────
@@ -782,45 +742,13 @@ function drawExplosion() {
   ctx.restore();
 }
 
-// ── DEBUG panel (remove before production) ────────────────────────────────────
-const dbgToggle = document.getElementById('dbg-toggle');
-const dbgPanel  = document.getElementById('dbg-panel');
-dbgToggle.addEventListener('click', () => {
-  debugMode = !debugMode;
-  dbgPanel.classList.toggle('open', debugMode);
-  dbgToggle.style.color = debugMode ? '#ff0' : '#0f0';
-  dbgToggle.style.borderColor = debugMode ? '#ff0' : '#0f0';
-});
-document.getElementById('dbg-n').addEventListener('click', () => {
-  if (state === S.PLAYING) audio.currentTime = songDuration / 2 - 3;
-});
-document.getElementById('dbg-h').addEventListener('click', () => {
-  if (state === S.PLAYING) audio.currentTime = Math.max(0, songDuration - 8);
-});
-document.getElementById('dbg-d').addEventListener('click', () => {
-  if (state === S.PLAYING) killRunner('ars');
-});
-const stateNames = ['LOADING','READY','PLAYING','DEAD','ENDING','CELEBRATION'];
-let dbgFps = 0, dbgFpsTs = 0, dbgFpsCount = 0;
-function updateDbgPanel(ts) {
-  if (!debugMode) return;
-  dbgFpsCount++;
-  if (ts - dbgFpsTs >= 500) { dbgFps = Math.round(dbgFpsCount * 1000 / (ts - dbgFpsTs)); dbgFpsCount = 0; dbgFpsTs = ts; }
-  document.getElementById('dbg-state').textContent  = `state: ${stateNames[state]}`;
-  document.getElementById('dbg-time').textContent   = `time:  ${audio.currentTime.toFixed(2)} / ${songDuration.toFixed(2)}`;
-  document.getElementById('dbg-speed').textContent  = `speed: ${speed.toFixed(2)}`;
-  document.getElementById('dbg-runner').textContent = `R.y:   ${R.y.toFixed(0)}  gnd:${GND().toFixed(0)}  onGnd:${R.onGround}`;
-  document.getElementById('dbg-obs').textContent    = `obs:   ${obstacles.length}  night:${isNight}`;
-  document.getElementById('dbg-fps').textContent    = `fps:   ${dbgFps}`;
-}
-// ── END DEBUG ─────────────────────────────────────────────────────────────────
 
 // ── Main loop ─────────────────────────────────────────────────────────────────
 let lastTs = 0;
 function loop(ts) {
   const dt = lastTs ? Math.min((ts - lastTs) / (1000 / 60), 3) : 1;
   lastTs = ts;
-  if (!blocked()) { update(dt); render(); updateDbgPanel(ts); }
+  if (!blocked()) { update(dt); render(); }
   requestAnimationFrame(loop);
 }
 
