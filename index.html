@@ -133,10 +133,9 @@ sfxGain.gain.value = 2.5;
 sfxGain.connect(sfxCtx.destination);
 
 function connectSfx(snd) { snd.preload = 'auto'; sfxCtx.createMediaElementSource(snd).connect(sfxGain); return snd; }
-function playSound(snd) {
-  const go = () => { snd.currentTime = 0; snd.play().catch(() => {}); };
-  if (sfxCtx.state === 'suspended') sfxCtx.resume().then(go); else go();
-}
+function resumeSfx() { if (sfxCtx.state !== 'running') return sfxCtx.resume(); return Promise.resolve(); }
+function playSound(snd) { resumeSfx().then(() => { snd.currentTime = 0; snd.play().catch(() => {}); }); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) resumeSfx(); });
 
 const sfxGameStart  = Object.assign(new Audio('sounds/gamestart%20sound.mp3'), { preload: 'auto' });
 const sfxJump       = connectSfx(new Audio('sounds/jump.mp3'));
