@@ -25,7 +25,8 @@
     #faces img { width: clamp(160px,44vw,400px); max-width: calc(50vw - 30px); max-height: 44vh; object-fit: contain; animation: bob 1.8s ease-in-out infinite; }
     #faces img:first-child { --tilt: -12deg; animation-delay: -0.9s; }
     #faces img:last-child  { --tilt:  12deg; animation-delay: -0.7s; }
-    #artists { position:fixed; bottom:0; left:0; right:0; display:flex; flex-direction:column; gap:4px; padding:6px 0 8px; align-items:center; background:rgba(0,10,40,0.55); z-index:10; opacity:0.45; transition:opacity 0.25s; }
+    #artists { position:fixed; bottom:0; left:0; right:0; display:flex; flex-direction:row; align-items:center; justify-content:center; gap:14px; padding:6px 14px 8px; background:rgba(0,10,40,0.55); z-index:10; opacity:0.45; transition:opacity 0.25s; }
+    #artists-social { display:flex; flex-direction:column; gap:4px; }
     #artists:hover { opacity:1; }
     #artists.hidden { display:none; }
     .artist-row { display:flex; align-items:center; gap:6px; direction:rtl; }
@@ -74,10 +75,7 @@
   <p  id="ov-s">שנייה טוען...</p>
 </div>
 <div id="artists" class="hidden">
-  <a id="track-btn" href="https://nanadisc.lnk.to/House30" target="_blank">
-    <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
-    האזינו לשיר
-  </a>
+  <div id="artists-social">
   <div class="artist-row">
     <span class="artist-label">אדם בלאגן</span>
     <a href="https://www.instagram.com/adam_balagan/" target="_blank" style="background:#7B8299">
@@ -109,6 +107,10 @@
     </a>
   </div>
   </div>
+  <a id="track-btn" href="https://nanadisc.lnk.to/House30" target="_blank">
+    <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+    האזינו לשיר
+  </a>
 </div>
 <!-- DEBUG (remove before production) -->
 <button id="dbg-toggle">DBG</button>
@@ -159,7 +161,7 @@ function playSound(snd) {
   if (sfxCtx.state === 'suspended') sfxCtx.resume().then(go); else go();
 }
 
-const sfxGameStart  = connectSfx(new Audio('sounds/gamestart%20sound.mp3'));
+const sfxGameStart  = Object.assign(new Audio('sounds/gamestart%20sound.mp3'), { preload: 'auto' });
 const sfxJump       = connectSfx(new Audio('sounds/jump.mp3'));
 const sfxDeaths     = [new Audio('sounds/death.mp3'), new Audio('sounds/death2.mp3')].map(connectSfx);
 const sfxDeathBooms = [new Audio('sounds/DEATHBOOM1.mp3.mp3'), new Audio('sounds/DEATHBOOM2.mp3.mp3')].map(connectSfx);
@@ -242,7 +244,7 @@ function randSpawn() { return 80 + Math.random() * 80; }
 
 // ── Input ─────────────────────────────────────────────────────────────────────
 function onTap() {
-  if (state === S.READY) { playSound(sfxGameStart); startGame(); return; }
+  if (state === S.READY) { sfxGameStart.currentTime = 0; sfxGameStart.play().catch(() => {}); startGame(); return; }
   if (state === S.DEAD || state >= S.ENDING) return;
   if (R.onGround) { R.vy = JV(); R.onGround = false; R.frozenFrame = Math.random() < 0.5 ? 1 : 3; playSound(sfxJump); }
 }
