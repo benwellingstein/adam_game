@@ -16,8 +16,8 @@
       font-family: 'Courier New', monospace; text-align: center; padding: 20px;
       direction: rtl; unicode-bidi: plaintext;
     }
-    #overlay h1 { font-size: clamp(1.8rem,6vw,4rem); margin-bottom:.8rem; line-height:1.2; }
-    #overlay p  { font-size: clamp(1rem,3vw,1.5rem); opacity:.88; margin-top:.4rem; }
+    #overlay h1 { font-size: clamp(1.2rem,5vmin,3.5rem); margin-bottom:.8rem; line-height:1.2; }
+    #overlay p  { font-size: clamp(0.8rem,2.5vmin,1.4rem); opacity:.88; margin-top:.4rem; }
     #overlay.hidden { display: none; }
     @keyframes bob { 0%,100% { transform: translateY(0) rotate(var(--tilt)); } 50% { transform: translateY(-14px) rotate(var(--tilt)); } }
     #faces { display: flex; justify-content: center; gap: 20px; margin-bottom: 18px; max-width: 100%; }
@@ -41,8 +41,8 @@
     #rotate-msg.show { display:flex; }
     #rotate-msg .rotate-icon { font-size:clamp(3rem,15vw,6rem); margin-bottom:16px; animation:spin90 1.4s ease-in-out infinite alternate; transform-origin:center; }
     @keyframes spin90 { 0% { transform:rotate(90deg); } 100% { transform:rotate(0deg); } }
-    #rotate-msg h2 { font-size:clamp(1.2rem,5vw,2rem); margin-bottom:8px; }
-    #rotate-msg p  { font-size:clamp(0.85rem,3vw,1.2rem); opacity:0.75; }
+    #rotate-msg h2 { font-size:clamp(1.2rem,5vmin,2rem); margin-bottom:8px; }
+    #rotate-msg p  { font-size:clamp(0.85rem,3vmin,1.2rem); opacity:0.75; }
     #pb { position:fixed; bottom:0; left:0; right:0; height:6px; background:rgba(0,0,0,.2); }
     #pf { height:100%; width:0%; background:linear-gradient(90deg,#44aaff,#ff44aa); }
     #pb.hidden { display:none; }
