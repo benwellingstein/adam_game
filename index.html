@@ -66,7 +66,8 @@
     <img src="Images/Face.png" alt="">
     <img src="Images/Face 2.png" alt="">
   </div>
-  <h1 id="ov-t">אוס 30</h1>
+  <img id="ov-header" src="Images/Header.png" alt="האוס 30" style="max-width:min(80vw,420px);max-height:20vh;object-fit:contain;margin-bottom:.6rem;">
+  <h1 id="ov-t"></h1>
   <p  id="ov-s">שנייה טוען...</p>
 </div>
 <div id="artists" class="hidden">
@@ -264,7 +265,7 @@ audio.addEventListener('error', goReady);
 
 function goReady() {
   state = S.READY;
-  ovT.innerHTML = 'האוס 30<br>מסעו של סברדי';
+  ovT.innerHTML = 'מסעו של סברדי';
   ovS.textContent = 'תעזרו לסברדי להגיע לאולפן של אדם בלאגן כדי שהם יוכלו לבשל באנגרים\nרק תזהרו שלא להדקר בדרך וגם שלא יתפסו אתכם האירנים המנייק\nבהצלחה…';
   ovEl.classList.remove('hidden');
   socials.classList.remove('hidden');
