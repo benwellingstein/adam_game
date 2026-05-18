@@ -128,6 +128,7 @@
   </div>
 </div>
 <!-- END DEBUG -->
+<a id="disk-link" href="https://nanadisc.lnk.to/House30" target="_blank" style="display:none;position:fixed;border-radius:50%;cursor:pointer;z-index:5;"></a>
 <audio id="audio" preload="auto"></audio>
 <script>
 const SONG = 'SVERDY%20ADAM%20BALAGAN%20HOUSE%2030%20%5BNew%20Mix%5D%20-%20%5BPRECISE%20MASTER%5D%2044.1Khz%20320Kbps.mp3';
@@ -275,9 +276,9 @@ function hitsDisk(e) {
   const dy = src.clientY - rect.top  - diskHit.cy;
   return dx*dx + dy*dy <= diskHit.r * diskHit.r;
 }
-document.addEventListener('touchstart', e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; e.preventDefault(); if (hitsDisk(e)) { window.open('https://nanadisc.lnk.to/House30','_blank'); return; } onTap(); }, { passive:false });
+document.addEventListener('touchstart', e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; e.preventDefault(); if (hitsDisk(e)) return; onTap(); }, { passive:false });
 document.addEventListener('touchend',   e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; e.preventDefault(); onRelease(); }, { passive:false });
-document.addEventListener('mousedown', e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; if (hitsDisk(e)) { window.open('https://nanadisc.lnk.to/House30','_blank'); return; } onTap(); });
+document.addEventListener('mousedown', e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; if (hitsDisk(e)) return; onTap(); });
 document.addEventListener('mouseup',   e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; onRelease(); });
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
@@ -730,14 +731,22 @@ function drawCelebText() {
 function drawCelebDisk() {
   if (!diskImg.complete || !diskImg.naturalWidth) return;
   const DELAY = 80;
-  if (celebTick < DELAY) { diskHit.r = 0; return; }
+  const dl = document.getElementById('disk-link');
+  if (celebTick < DELAY) { diskHit.r = 0; dl.style.display='none'; return; }
   const t = Math.min(1, (celebTick - DELAY) / 40);
   const ease = 1 - Math.pow(1 - t, 3);
   const size = canvas.height * 0.36 * ease;
-  if (size < 1) { diskHit.r = 0; return; }
+  if (size < 1) { diskHit.r = 0; dl.style.display='none'; return; }
   const cx = canvas.width / 2;
   const cy = GND() - size * 0.55;
   diskHit.cx = cx; diskHit.cy = cy; diskHit.r = size / 2;
+  const r = canvas.getBoundingClientRect();
+  const scaleX = r.width / canvas.width, scaleY = r.height / canvas.height;
+  dl.style.display = 'block';
+  dl.style.left   = (r.left + (cx - size/2) * scaleX) + 'px';
+  dl.style.top    = (r.top  + (cy - size/2) * scaleY) + 'px';
+  dl.style.width  = (size * scaleX) + 'px';
+  dl.style.height = (size * scaleY) + 'px';
   const spinT = Math.min(1, (celebTick - DELAY) / 90);
   const angle = spinT * Math.PI * 2;
   ctx.save();
