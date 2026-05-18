@@ -25,13 +25,14 @@
     #faces img { width: clamp(160px,44vw,400px); max-width: calc(50vw - 30px); max-height: 44vh; object-fit: contain; animation: bob 1.8s ease-in-out infinite; }
     #faces img:first-child { --tilt: -12deg; animation-delay: -0.9s; }
     #faces img:last-child  { --tilt:  12deg; animation-delay: -0.7s; }
-    #artists { position:fixed; bottom:0; left:0; right:0; display:flex; flex-direction:column; gap:6px; padding:8px 0 12px; align-items:center; background:rgba(0,10,40,0.88); z-index:10; }
+    #artists { position:fixed; bottom:0; left:0; right:0; display:flex; flex-direction:column; gap:4px; padding:6px 0 8px; align-items:center; background:rgba(0,10,40,0.55); z-index:10; opacity:0.45; transition:opacity 0.25s; }
+    #artists:hover { opacity:1; }
     #artists.hidden { display:none; }
-    .artist-row { display:flex; align-items:center; gap:8px; direction:rtl; }
-    .artist-label { font-family:'Courier New',monospace; font-size:clamp(0.65rem,1.8vw,0.9rem); color:rgba(255,255,255,0.75); white-space:nowrap; min-width:6em; text-align:right; }
-    #artists a { display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; opacity:0.88; transition:opacity 0.2s,transform 0.2s; }
+    .artist-row { display:flex; align-items:center; gap:6px; direction:rtl; }
+    .artist-label { font-family:'Courier New',monospace; font-size:clamp(0.55rem,1.5vw,0.75rem); color:rgba(255,255,255,0.65); white-space:nowrap; min-width:6em; text-align:right; }
+    #artists a { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; opacity:0.8; transition:opacity 0.2s,transform 0.2s; }
     #artists a:hover { opacity:1; transform:scale(1.15); }
-    #artists svg { width:24px; height:24px; fill:white; }
+    #artists svg { width:16px; height:16px; fill:white; }
     #pb { position:fixed; bottom:0; left:0; right:0; height:6px; background:rgba(0,0,0,.2); }
     #pf { height:100%; width:0%; background:linear-gradient(90deg,#44aaff,#ff44aa); }
     #pb.hidden { display:none; }
