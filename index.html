@@ -276,8 +276,9 @@ function hitsDisk(e) {
   const dy = src.clientY - rect.top  - diskHit.cy;
   return dx*dx + dy*dy <= diskHit.r * diskHit.r;
 }
-document.addEventListener('touchstart', e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; e.preventDefault(); if (hitsDisk(e)) return; onTap(); }, { passive:false });
-document.addEventListener('touchend',   e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; e.preventDefault(); onRelease(); }, { passive:false });
+const diskLinkEl = document.getElementById('disk-link');
+document.addEventListener('touchstart', e => { if (blocked() || socials.contains(e.target) || isDbgEl(e) || diskLinkEl.contains(e.target)) return; e.preventDefault(); onTap(); }, { passive:false });
+document.addEventListener('touchend',   e => { if (blocked() || socials.contains(e.target) || isDbgEl(e) || diskLinkEl.contains(e.target)) return; e.preventDefault(); onRelease(); }, { passive:false });
 document.addEventListener('mousedown', e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; if (hitsDisk(e)) return; onTap(); });
 document.addEventListener('mouseup',   e => { if (blocked() || socials.contains(e.target) || isDbgEl(e)) return; onRelease(); });
 
