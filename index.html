@@ -169,8 +169,9 @@ let state = S.LOADING, fc = 0;
 let stars = [];
 
 const rotateMsg = document.getElementById('rotate-msg');
+const isMobile = () => navigator.maxTouchPoints > 0;
 function checkOrientation() {
-  const landscape = innerWidth > innerHeight;
+  const landscape = isMobile() && innerWidth > innerHeight;
   rotateMsg.classList.toggle('show', landscape);
   if (landscape && state === S.PLAYING) audio.pause();
   if (!landscape && state === S.PLAYING) audio.play().catch(() => {});
