@@ -505,7 +505,7 @@ function render() {
   drawGround();
 
   if (state === S.CELEBRATION) {
-    drawHouse(houseX, GND()); drawCelebParticles(); drawCelebText(); return;
+    drawHouse(houseX, GND()); drawCelebParticles(); drawCelebText(); drawCelebDisk(); return;
   }
 
   for (const o of obstacles) {
@@ -710,10 +710,47 @@ function drawCelebText() {
   lines.forEach((l,i) => ctx.strokeText(l, 0, i*gap));
   ctx.shadowColor='transparent';
   const rg=ctx.createLinearGradient(-fs*3,0,fs*3,0);
-  rg.addColorStop(0,'#ff4444'); rg.addColorStop(.25,'#ffcc00');
-  rg.addColorStop(.5,'#44ff88'); rg.addColorStop(.75,'#44aaff'); rg.addColorStop(1,'#cc44ff');
+  rg.addColorStop(0,'#ffcc00'); rg.addColorStop(.33,'#44ff88');
+  rg.addColorStop(.67,'#44aaff'); rg.addColorStop(1,'#cc44ff');
   ctx.fillStyle=rg;
   lines.forEach((l,i) => ctx.fillText(l, 0, i*gap));
+  ctx.restore();
+}
+
+function drawCelebDisk() {
+  const DELAY = 80;
+  if (celebTick < DELAY) return;
+  const t = Math.min(1, (celebTick - DELAY) / 40);
+  const ease = 1 - Math.pow(1 - t, 3);
+  const R2 = canvas.height * 0.18 * ease;
+  if (R2 < 1) return;
+  const cx = canvas.width / 2;
+  const cy = GND() - R2 * 0.9;
+  const angle = fc * 0.04;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  ctx.globalAlpha = ease;
+  // shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8;
+  // outer vinyl
+  ctx.beginPath(); ctx.arc(0, 0, R2, 0, Math.PI * 2);
+  ctx.fillStyle = '#111'; ctx.fill();
+  ctx.shadowColor = 'transparent';
+  // grooves
+  for (let i = 1; i <= 5; i++) {
+    ctx.beginPath(); ctx.arc(0, 0, R2 * (0.45 + i * 0.1), 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  // label
+  const lr = R2 * 0.38;
+  const lg = ctx.createRadialGradient(0, 0, 0, 0, 0, lr);
+  lg.addColorStop(0, '#ffcc00'); lg.addColorStop(0.5, '#ff4444'); lg.addColorStop(1, '#cc44ff');
+  ctx.beginPath(); ctx.arc(0, 0, lr, 0, Math.PI * 2);
+  ctx.fillStyle = lg; ctx.fill();
+  // center hole
+  ctx.beginPath(); ctx.arc(0, 0, R2 * 0.06, 0, Math.PI * 2);
+  ctx.fillStyle = '#111'; ctx.fill();
   ctx.restore();
 }
 
